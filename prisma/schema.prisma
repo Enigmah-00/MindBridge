@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("mb_PRISMA_DATABASE_URL")
+  directUrl = env("mb_POSTGRES_URL")
 }
 
 enum Role {

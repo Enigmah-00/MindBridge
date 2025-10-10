@@ -1,14 +1,13 @@
 {
-  "/dashboard/page": "app/dashboard/page.js",
-  "/auth/signup/page": "app/auth/signup/page.js",
-  "/api/auth/signup/route": "app/api/auth/signup/route.js",
-  "/api/auth/me/route": "app/api/auth/me/route.js",
   "/auth/login/page": "app/auth/login/page.js",
-  "/api/auth/logout/route": "app/api/auth/logout/route.js",
-  "/api/auth/login/route": "app/api/auth/login/route.js",
+  "/dashboard/page": "app/dashboard/page.js",
   "/profile/page": "app/profile/page.js",
-  "/doctors/page": "app/doctors/page.js",
+  "/api/auth/me/route": "app/api/auth/me/route.js",
+  "/auth/signup/page": "app/auth/signup/page.js",
   "/page": "app/page.js",
+  "/doctors/page": "app/doctors/page.js",
   "/api/profile/route": "app/api/profile/route.js",
-  "/api/doctors/list/route": "app/api/doctors/list/route.js"
+  "/api/doctors/list/route": "app/api/doctors/list/route.js",
+  "/quizzes/page": "app/quizzes/page.js",
+  "/api/quizzes/route": "app/api/quizzes/route.js"
 }
