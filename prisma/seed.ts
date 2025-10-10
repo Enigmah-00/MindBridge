@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -114,6 +115,9 @@ async function main() {
     },
   ];
 
+  // Hash the default password once before the loop
+  const defaultPasswordHash = await bcrypt.hash("doctor123", 10);
+
   for (const doctorData of realDoctors) {
     const docUser = await prisma.user.upsert({
       where: { username: doctorData.username },
@@ -121,8 +125,7 @@ async function main() {
       create: {
         username: doctorData.username,
         email: doctorData.email,
-        passwordHash:
-          "$argon2id$v=19$m=65536,t=3,p=1$zFqQq2Sk8mYQmH2r2cP1EA$z0gTQqt5kY8T5mJXW8Yy3oD0+5qorZkqck2/7Qv+Kj0",
+        passwordHash: defaultPasswordHash,
         role: "DOCTOR",
       },
     });

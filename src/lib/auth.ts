@@ -1,4 +1,4 @@
-import argon2 from "argon2";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import type { NextResponse } from "next/server";
@@ -10,11 +10,11 @@ const isProd = process.env.NODE_ENV === "production";
 export type JwtPayload = { sub: string; role: "USER" | "DOCTOR" | "ADMIN" };
 
 export async function hashPassword(password: string) {
-  return argon2.hash(password);
+  return bcrypt.hash(password, 10);
 }
 
 export async function verifyPassword(hash: string, password: string) {
-  return argon2.verify(hash, password);
+  return bcrypt.compare(password, hash);
 }
 
 export function signJwt(payload: JwtPayload) {
