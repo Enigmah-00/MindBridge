@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const quizzes = await prisma.quiz.findMany({
     select: {
@@ -17,7 +19,7 @@ export async function GET() {
   });
 
   // Add metadata to each quiz
-  const enhancedQuizzes = quizzes.map((quiz) => ({
+  const enhancedQuizzes = quizzes.map((quiz: any) => ({
     key: quiz.key,
     title: quiz.title,
     description: quiz.description,

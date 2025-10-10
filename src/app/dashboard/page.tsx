@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { getSession, requireSession } from "@/lib/auth";
 import Link from "next/link";
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const session = await requireSession();
   const { user } = session;

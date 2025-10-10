@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(_: NextRequest, { params }: { params: { key: string } }) {
   const key = decodeURIComponent(params.key);
   const quiz = await prisma.quiz.findUnique({

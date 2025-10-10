@@ -8,6 +8,8 @@ function parseLocalDateToUTC(dateStr: string) {
   return d;
 }
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   const { user } = await requireRole("DOCTOR");
   const doctor = await prisma.doctor.findUnique({ where: { userId: user.id } });

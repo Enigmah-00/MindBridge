@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   const { user } = await requireRole("DOCTOR");
   const doctor = await prisma.doctor.findUnique({ where: { userId: user.id } });

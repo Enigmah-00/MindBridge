@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth";
 
 // GET: Fetch all conversations for the current user
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   const session = await requireSession();
   const { searchParams } = new URL(req.url);

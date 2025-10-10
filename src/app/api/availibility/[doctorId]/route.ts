@@ -21,6 +21,8 @@ function generateDailySlots(avails: any[], weekday: number) {
   return slots;
 }
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest, { params }: { params: { doctorId: string } }) {
   const { searchParams } = new URL(req.url);
   const date = searchParams.get("date");

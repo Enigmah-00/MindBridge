@@ -8,6 +8,8 @@ function parseLocalDateToUTC(dateStr: string) {
   return d;
 }
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   const { user } = await requireSession();
   const { doctorId, date, startMinute } = await req.json() as { doctorId: string; date: string; startMinute: number };

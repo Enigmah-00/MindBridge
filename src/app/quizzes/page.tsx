@@ -1,18 +1,41 @@
+"use client";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { useEffect, useState } from "react";
 
-export default async function QuizzesPage() {
-  const quizzes = await prisma.quiz.findMany({
-    select: {
-      key: true,
-      title: true,
-      description: true,
-      questions: {
-        select: { id: true }
-      }
-    },
-    orderBy: { key: "asc" }
-  });
+interface Quiz {
+  key: string;
+  title: string;
+  description: string;
+  questionCount: number;
+  estimatedMinutes: number;
+  category: string;
+}
+
+export const dynamic = 'force-dynamic';
+
+export default function QuizzesPage() {
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/quizzes")
+      .then((res) => res.json())
+      .then((data) => {
+        setQuizzes(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="max-w-5xl mx-auto space-y-6">
+        <div className="card p-6 text-center">
+          <p className="text-gray-600">Loading assessments...</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="max-w-5xl mx-auto space-y-6">
@@ -23,8 +46,6 @@ export default async function QuizzesPage() {
 
       <div className="grid md:grid-cols-2 gap-6">
         {quizzes.map((q) => {
-          const category = q.key.includes("PHQ") ? "Depression" : q.key.includes("GAD") ? "Anxiety" : "Mental Health";
-          const estimatedMinutes = Math.ceil(q.questions.length * 0.5);
           const icon = q.key.includes("PHQ") ? "💭" : q.key.includes("GAD") ? "😰" : "🧠";
           
           return (
@@ -36,7 +57,7 @@ export default async function QuizzesPage() {
               <div className="flex items-start justify-between">
                 <div className="text-3xl">{icon}</div>
                 <span className="text-xs px-2 py-1 bg-brand-100 text-brand-700 rounded-full">
-                  {category}
+                  {q.category}
                 </span>
               </div>
               
@@ -46,8 +67,8 @@ export default async function QuizzesPage() {
               </div>
 
               <div className="flex items-center gap-4 text-xs text-gray-500 border-t pt-3">
-                <span>📝 {q.questions.length} questions</span>
-                <span>⏱️ ~{estimatedMinutes} min</span>
+                <span>📝 {q.questionCount} questions</span>
+                <span>⏱️ ~{q.estimatedMinutes} min</span>
               </div>
 
               <button className="btn w-full mt-2">
