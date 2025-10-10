@@ -1,13 +1,6 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/auth/login/page": "app/auth/login/page.js",
   "/page": "app/page.js",
   "/dashboard/page": "app/dashboard/page.js",
   "/auth/signup/page": "app/auth/signup/page.js",
-  "/messages/page": "app/messages/page.js",
-  "/api/auth/me/route": "app/api/auth/me/route.js",
-  "/api/availibility/route": "app/api/availibility/route.js",
-  "/availibility/page": "app/availibility/page.js",
-  "/api/auth/login/route": "app/api/auth/login/route.js",
-  "/api/messages/route": "app/api/messages/route.js"
+  "/auth/login/page": "app/auth/login/page.js"
 }
