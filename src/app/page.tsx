@@ -23,11 +23,7 @@ export default async function HomePage() {
         </ul>
       </div>
       <div className="card p-6">
-        <img
-          src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=1200&auto=format&fit=crop"
-          alt="MindBridge brain network illustration"
-          className="rounded-lg w-full object-cover h-96"
-        />
+        <img src="https://media.istockphoto.com/id/1307095695/photo/adult-and-children-hands-holding-paper-brain-and-heart-brain-stroke-world-heart-day-world.webp?a=1&b=1&s=612x612&w=0&k=20&c=EswERtArXiFM3bGVoD8PM4cuh0gawmGlXH6C8kCR-Qw=" />
       </div>
     </section>
   );

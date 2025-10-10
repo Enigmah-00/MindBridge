@@ -1,8 +1,3 @@
 {
-  "/auth/login/page": "app/auth/login/page.js",
-  "/auth/signup/page": "app/auth/signup/page.js",
-  "/page": "app/page.js",
-  "/availibility/page": "app/availibility/page.js",
-  "/api/auth/me/route": "app/api/auth/me/route.js",
-  "/dashboard/page": "app/dashboard/page.js"
+  "/page": "app/page.js"
 }
