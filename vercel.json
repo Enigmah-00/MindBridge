@@ -1,6 +1,0 @@
-{
-  "buildCommand": "npm run vercel-build",
-  "env": {
-    "SKIP_ENV_VALIDATION": "1"
-  }
-}

@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import type { NextResponse } from "next/server";
@@ -6,36 +6,26 @@ import { prisma } from "@/lib/prisma";
 
 export const COOKIE_NAME = "mb_token";
 const isProd = process.env.NODE_ENV === "production";
-const SALT_ROUNDS = 10;
 
 export type JwtPayload = { sub: string; role: "USER" | "DOCTOR" | "ADMIN" };
 
 export async function hashPassword(password: string) {
-  return bcrypt.hash(password, SALT_ROUNDS);
+  return argon2.hash(password);
 }
 
 export async function verifyPassword(hash: string, password: string) {
-  return bcrypt.compare(password, hash);
+  return argon2.verify(hash, password);
 }
 
 export function signJwt(payload: JwtPayload) {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error("JWT_SECRET environment variable is not set");
-  }
+  const secret = process.env.JWT_SECRET!;
   return jwt.sign(payload, secret, { expiresIn: "7d" });
 }
 
 export function verifyJwt(token: string): JwtPayload | null {
   try {
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      console.error("JWT_SECRET environment variable is not set");
-      return null;
-    }
-    return jwt.verify(token, secret) as JwtPayload;
-  } catch (error) {
-    console.error("JWT verification failed:", error);
+    return jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+  } catch {
     return null;
   }
 }
