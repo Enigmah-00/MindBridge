@@ -58,11 +58,12 @@ model Profile {
 }
 
 model Quiz {
-  id          String     @id @default(cuid())
-  key         String     @unique
+  id          String           @id @default(cuid())
+  key         String           @unique
   title       String
   description String?
   questions   Question[]
+  submissions QuizSubmission[] @relation("QuizToSubmissions") // back relation
 }
 
 model Question {
@@ -88,7 +89,7 @@ model QuizSubmission {
   userId     String
   user       User      @relation(fields: [userId], references: [id])
   quizId     String
-  quiz       Quiz      @relation(fields: [quizId], references: [id])
+  quiz       Quiz      @relation("QuizToSubmissions", fields: [quizId], references: [id])
   totalScore Int
   band       String?
   createdAt  DateTime  @default(now())
@@ -105,9 +106,10 @@ model QuizAnswer {
 }
 
 model GameType {
-  id   String @id @default(cuid())
-  key  String @unique
-  name String
+  id       String        @id @default(cuid())
+  key      String        @unique
+  name     String
+  sessions GameSession[] @relation("GameTypeToSessions") // back relation
 }
 
 model GameSession {
@@ -115,25 +117,26 @@ model GameSession {
   userId      String
   user        User     @relation(fields: [userId], references: [id])
   gameTypeId  String
-  gameType    GameType @relation(fields: [gameTypeId], references: [id])
+  gameType    GameType @relation("GameTypeToSessions", fields: [gameTypeId], references: [id])
   score       Int
   durationSec Int
   createdAt   DateTime @default(now())
 }
 
 model Doctor {
-  id           String  @id @default(cuid())
-  userId       String  @unique
-  user         User    @relation(fields: [userId], references: [id])
+  id           String                    @id @default(cuid())
+  userId       String                    @unique
+  user         User                      @relation(fields: [userId], references: [id])
   name         String
   city         String?
   country      String?
   latitude     Float?
   longitude    Float?
-  telehealth   Boolean @default(false)
+  telehealth   Boolean                   @default(false)
   specialties  DoctorSpecialty[]
   availability DoctorWeeklyAvailability[]
-  appointments Appointment[] @relation("DoctorAppointments")
+  appointments Appointment[]             @relation("DoctorAppointments")
+  dayCounters  AppointmentDayCounter[]   @relation("DoctorToDayCounters") // back relation
 }
 
 model Specialty {
@@ -183,7 +186,7 @@ model AppointmentDayCounter {
   doctorId   String
   date       DateTime
   nextSerial Int     @default(1)
-  doctor     Doctor  @relation(fields: [doctorId], references: [id])
+  doctor     Doctor  @relation("DoctorToDayCounters", fields: [doctorId], references: [id])
   @@id([doctorId, date])
 }
 
