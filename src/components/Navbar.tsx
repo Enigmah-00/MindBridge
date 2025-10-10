@@ -35,13 +35,21 @@ export function Navbar() {
           {authed && (
             <>
               <Link href="/dashboard" className="hover:text-brand-700">Dashboard</Link>
-              <Link href="/profile" className="hover:text-brand-700">Profile</Link>
-              <Link href="/quizzes" className="hover:text-brand-700">Quizzes</Link>
-              <Link href="/doctors/suggest" className="hover:text-brand-700">Doctors</Link>
-              <Link href="/appointments" className="hover:text-brand-700">Appointments</Link>
-              {role === "DOCTOR" && (
-                <Link href="/availability" className="hover:text-brand-700">Availability</Link>
+              {role === "USER" && (
+                <>
+                  <Link href="/profile" className="hover:text-brand-700">Profile</Link>
+                  <Link href="/quizzes" className="hover:text-brand-700">Quizzes</Link>
+                  <Link href="/doctors" className="hover:text-brand-700">Doctors</Link>
+                  <Link href="/appointments" className="hover:text-brand-700">Appointments</Link>
+                </>
               )}
+              {role === "DOCTOR" && (
+                <>
+                  <Link href="/availability" className="hover:text-brand-700">Availability</Link>
+                  <Link href="/appointments" className="hover:text-brand-700">Appointments</Link>
+                </>
+              )}
+              <Link href="/messages" className="hover:text-brand-700">💬 Messages</Link>
               <button onClick={logout} className="btn">Logout</button>
             </>
           )}

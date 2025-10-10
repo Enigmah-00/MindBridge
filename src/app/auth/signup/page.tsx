@@ -4,10 +4,13 @@ import { useRouter } from "next/navigation";
 
 export default function SignupPage() {
   const [role, setRole] = useState<"USER" | "DOCTOR">("USER");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
+    
     const fd = new FormData(e.currentTarget);
     const payload: any = {
       username: fd.get("username"),
@@ -25,11 +28,28 @@ export default function SignupPage() {
         telehealth: fd.get("telehealth") === "on",
       };
     }
-    const res = await fetch("/api/auth/signup", {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
-    });
-    if (res.ok) router.push("/dashboard");
-    else alert((await res.json()).error || "Signup failed");
+    
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        credentials: "include" // Important: This allows cookies to be set
+      });
+      
+      if (res.ok) {
+        // Use window.location for a hard redirect to ensure middleware runs
+        window.location.href = "/dashboard";
+      } else {
+        setLoading(false);
+        const errorData = await res.json().catch(() => ({ error: "Signup failed" }));
+        alert(errorData.error || "Signup failed");
+      }
+    } catch (error) {
+      setLoading(false);
+      alert("Network error. Please try again.");
+      console.error("Signup error:", error);
+    }
   }
 
   return (
@@ -87,7 +107,9 @@ export default function SignupPage() {
             </label>
           </div>
         )}
-        <button className="btn w-full">Sign up</button>
+        <button className="btn w-full" type="submit" disabled={loading}>
+          {loading ? "Creating account..." : "Sign up"}
+        </button>
       </form>
     </section>
   );

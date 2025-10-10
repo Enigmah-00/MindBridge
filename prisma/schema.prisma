@@ -33,6 +33,8 @@ model User {
   derivedConcerns DerivedConcern[]
   doctor          Doctor?
   appointments    Appointment[]    @relation("PatientAppointments")
+  sentMessages    Message[]        @relation("SentMessages")
+  receivedMessages Message[]       @relation("ReceivedMessages")
 }
 
 model Profile {
@@ -202,4 +204,18 @@ model DerivedConcern {
   concern   String
   score     Float
   createdAt DateTime @default(now())
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId String
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  content    String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([senderId, receiverId])
+  @@index([receiverId, read])
 }

@@ -22,69 +22,142 @@ async function main() {
     }),
   ]);
 
-  // Sample doctor user (note: passwordHash here is a placeholder; not used to login)
-  const docUser = await prisma.user.upsert({
-    where: { username: "dr_smith" },
-    update: {},
-    create: {
-      username: "dr_smith",
-      email: "drsmith@example.com",
-      passwordHash:
-        "$argon2id$v=19$m=65536,t=3,p=1$zFqQq2Sk8mYQmH2r2cP1EA$z0gTQqt5kY8T5mJXW8Yy3oD0+5qorZkqck2/7Qv+Kj0",
-      role: "DOCTOR",
-    },
-  });
-
-  const doctor = await prisma.doctor.upsert({
-    where: { userId: docUser.id },
-    update: {},
-    create: {
-      userId: docUser.id,
-      name: "Dr. Alex Smith",
+  // Real doctors from Bangladesh (data inspired by doctorbangladesh.com)
+  const realDoctors = [
+    {
+      username: "dr_zaman",
+      email: "drzaman@example.com",
+      name: "Dr. Mohammad Zaman",
       city: "Dhaka",
       country: "Bangladesh",
       latitude: 23.7808875,
-      longitude: 90.2792371,
+      longitude: 90.4009246,
       telehealth: true,
+      specialties: [psychiatry, therapy],
     },
-  });
+    {
+      username: "dr_ahmed",
+      email: "drahmed@example.com",
+      name: "Dr. Farhana Ahmed",
+      city: "Chittagong",
+      country: "Bangladesh",
+      latitude: 22.356851,
+      longitude: 91.783182,
+      telehealth: true,
+      specialties: [psychiatry],
+    },
+    {
+      username: "dr_rahman",
+      email: "drrahman@example.com",
+      name: "Dr. Abdul Rahman",
+      city: "Sylhet",
+      country: "Bangladesh",
+      latitude: 24.8949,
+      longitude: 91.8687,
+      telehealth: false,
+      specialties: [therapy, sleep],
+    },
+    {
+      username: "dr_sultana",
+      email: "drsultana@example.com",
+      name: "Dr. Nasrin Sultana",
+      city: "Dhaka",
+      country: "Bangladesh",
+      latitude: 23.8103,
+      longitude: 90.4125,
+      telehealth: true,
+      specialties: [psychiatry, therapy, sleep],
+    },
+    {
+      username: "dr_islam",
+      email: "drislam@example.com",
+      name: "Dr. Md. Aminul Islam",
+      city: "Rajshahi",
+      country: "Bangladesh",
+      latitude: 24.3745,
+      longitude: 88.6042,
+      telehealth: true,
+      specialties: [psychiatry],
+    },
+    {
+      username: "dr_hossain",
+      email: "drhossain@example.com",
+      name: "Dr. Kamrul Hossain",
+      city: "Khulna",
+      country: "Bangladesh",
+      latitude: 22.8456,
+      longitude: 89.5403,
+      telehealth: false,
+      specialties: [therapy],
+    },
+    {
+      username: "dr_begum",
+      email: "drbegum@example.com",
+      name: "Dr. Taslima Begum",
+      city: "Dhaka",
+      country: "Bangladesh",
+      latitude: 23.7644,
+      longitude: 90.3688,
+      telehealth: true,
+      specialties: [psychiatry, sleep],
+    },
+    {
+      username: "dr_chowdhury",
+      email: "drchowdhury@example.com",
+      name: "Dr. Ashraf Chowdhury",
+      city: "Comilla",
+      country: "Bangladesh",
+      latitude: 23.4607,
+      longitude: 91.1809,
+      telehealth: true,
+      specialties: [therapy],
+    },
+  ];
 
-  await prisma.doctorSpecialty.createMany({
-    data: [
-      { doctorId: doctor.id, specialtyId: psychiatry.id },
-      { doctorId: doctor.id, specialtyId: therapy.id },
-      { doctorId: doctor.id, specialtyId: sleep.id },
-    ],
-    skipDuplicates: true,
-  });
-
-  // Availability: Mon–Fri, 9:00–12:00, 20-min slots
-  for (const weekday of [1, 2, 3, 4, 5]) {
-    await prisma.doctorWeeklyAvailability.upsert({
-      where: {
-        // composite uniqueness not defined, so use a synthetic id by reading first
-        id: (
-          await prisma.doctorWeeklyAvailability.findFirst({
-            where: { doctorId: doctor.id, weekday, startMinute: 9 * 60, endMinute: 12 * 60 },
-          })
-        )?.id ?? "",
-      },
-      update: {
-        slotMinutes: 20,
-        timezone: "Asia/Dhaka",
-      },
+  for (const doctorData of realDoctors) {
+    const docUser = await prisma.user.upsert({
+      where: { username: doctorData.username },
+      update: {},
       create: {
-        doctorId: doctor.id,
-        weekday,
-        startMinute: 9 * 60,
-        endMinute: 12 * 60,
-        slotMinutes: 20,
-        timezone: "Asia/Dhaka",
+        username: doctorData.username,
+        email: doctorData.email,
+        passwordHash:
+          "$argon2id$v=19$m=65536,t=3,p=1$zFqQq2Sk8mYQmH2r2cP1EA$z0gTQqt5kY8T5mJXW8Yy3oD0+5qorZkqck2/7Qv+Kj0",
+        role: "DOCTOR",
       },
-    }).catch(async () => {
-      // fallback if upsert key was invalid: ensure one record exists
+    });
+
+    const doctor = await prisma.doctor.upsert({
+      where: { userId: docUser.id },
+      update: {},
+      create: {
+        userId: docUser.id,
+        name: doctorData.name,
+        city: doctorData.city,
+        country: doctorData.country,
+        latitude: doctorData.latitude,
+        longitude: doctorData.longitude,
+        telehealth: doctorData.telehealth,
+      },
+    });
+
+    await prisma.doctorSpecialty.createMany({
+      data: doctorData.specialties.map((spec) => ({
+        doctorId: doctor.id,
+        specialtyId: spec.id,
+      })),
+      skipDuplicates: true,
+    });
+
+    // Availability: Mon–Fri, 9:00–17:00, 30-min slots
+    for (const weekday of [1, 2, 3, 4, 5]) {
       const existing = await prisma.doctorWeeklyAvailability.findFirst({
-        where: { doctorId: doctor.id, weekday, startMinute: 9 * 60, endMinute: 12 * 60 },
+        where: {
+          doctorId: doctor.id,
+          weekday,
+          startMinute: 9 * 60,
+          endMinute: 17 * 60,
+        },
       });
       if (!existing) {
         await prisma.doctorWeeklyAvailability.create({
@@ -92,13 +165,13 @@ async function main() {
             doctorId: doctor.id,
             weekday,
             startMinute: 9 * 60,
-            endMinute: 12 * 60,
-            slotMinutes: 20,
+            endMinute: 17 * 60,
+            slotMinutes: 30,
             timezone: "Asia/Dhaka",
           },
         });
       }
-    });
+    }
   }
 
   // Quizzes
