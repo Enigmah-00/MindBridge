@@ -9,6 +9,8 @@ interface Doctor {
   telehealth: boolean;
   specialties: string[];
   userId?: string;
+  availability: string[];
+  hasAvailability: boolean;
 }
 
 export default function DoctorsListPage() {
@@ -23,10 +25,29 @@ export default function DoctorsListPage() {
 
   async function loadDoctors() {
     setLoading(true);
-    const res = await fetch("/api/doctors/list");
-    const data = await res.json();
-    setDoctors(data);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/doctors/list");
+      if (!res.ok) {
+        console.error("Failed to fetch doctors:", res.status, res.statusText);
+        setDoctors([]);
+        setLoading(false);
+        return;
+      }
+      const text = await res.text();
+      if (!text) {
+        console.error("Empty response from API");
+        setDoctors([]);
+        setLoading(false);
+        return;
+      }
+      const data = JSON.parse(text);
+      setDoctors(data);
+    } catch (error) {
+      console.error("Error loading doctors:", error);
+      setDoctors([]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const filteredDoctors = doctors.filter((doc) => {
@@ -121,6 +142,31 @@ export default function DoctorsListPage() {
                   ))}
                 </div>
               </div>
+
+              {/* Availability Section */}
+              {doctor.hasAvailability ? (
+                <div className="space-y-1 border-t pt-3">
+                  <div className="text-sm font-medium text-green-700 flex items-center gap-1">
+                    ⏰ Available Hours (BD Time)
+                  </div>
+                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                    {doctor.availability.map((avail, idx) => (
+                      <div
+                        key={idx}
+                        className="text-xs text-gray-700 bg-green-50 px-2 py-1 rounded"
+                      >
+                        {avail}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="border-t pt-3">
+                  <div className="text-xs text-gray-500 italic">
+                    ⏰ Availability not set yet
+                  </div>
+                </div>
+              )}
 
               <div className="pt-3 flex gap-2">
                 <Link

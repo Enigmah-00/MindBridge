@@ -149,27 +149,32 @@ async function main() {
       skipDuplicates: true,
     });
 
-    // Availability: Mon–Fri, 9:00–17:00, 30-min slots
-    for (const weekday of [1, 2, 3, 4, 5]) {
-      const existing = await prisma.doctorWeeklyAvailability.findFirst({
-        where: {
-          doctorId: doctor.id,
-          weekday,
-          startMinute: 9 * 60,
-          endMinute: 17 * 60,
-        },
-      });
-      if (!existing) {
-        await prisma.doctorWeeklyAvailability.create({
-          data: {
+    // Only set availability for the first 3 doctors (dr_zaman, dr_ahmed, dr_rahman)
+    // This way, other doctors will show "Availability not set yet" until they log in and set it
+    const doctorsWithAvailability = ["dr_zaman", "dr_ahmed", "dr_rahman"];
+    if (doctorsWithAvailability.includes(doctorData.username)) {
+      // Availability: Mon–Fri, 9:00–17:00, 30-min slots
+      for (const weekday of [1, 2, 3, 4, 5]) {
+        const existing = await prisma.doctorWeeklyAvailability.findFirst({
+          where: {
             doctorId: doctor.id,
             weekday,
             startMinute: 9 * 60,
             endMinute: 17 * 60,
-            slotMinutes: 30,
-            timezone: "Asia/Dhaka",
           },
         });
+        if (!existing) {
+          await prisma.doctorWeeklyAvailability.create({
+            data: {
+              doctorId: doctor.id,
+              weekday,
+              startMinute: 9 * 60,
+              endMinute: 17 * 60,
+              slotMinutes: 30,
+              timezone: "Asia/Dhaka",
+            },
+          });
+        }
       }
     }
   }

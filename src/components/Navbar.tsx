@@ -45,7 +45,7 @@ export function Navbar() {
               )}
               {role === "DOCTOR" && (
                 <>
-                  <Link href="/availability" className="hover:text-brand-700">Availability</Link>
+                  <Link href="/availibility" className="hover:text-brand-700">Availability</Link>
                   <Link href="/appointments" className="hover:text-brand-700">Appointments</Link>
                 </>
               )}
