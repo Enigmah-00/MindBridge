@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  DOCTOR
+  ADMIN
+}
+
+enum AppointmentStatus {
+  BOOKED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+model User {
+  id              String   @id @default(cuid())
+  username        String   @unique
+  email           String?  @unique
+  passwordHash    String
+  role            Role     @default(USER)
+  createdAt       DateTime @default(now())
+  profile         Profile?
+  quizSubmissions QuizSubmission[]
+  gameSessions    GameSession[]
+  derivedConcerns DerivedConcern[]
+  doctor          Doctor?
+  appointments    Appointment[] @relation("PatientAppointments")
+}
+
+model Profile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id])
+  age               Int?
+  gender            String?
+  city              String?
+  country           String?
+  latitude          Float?
+  longitude         Float?
+  heightCm          Float?
+  weightKg          Float?
+  sleepHours        Float?
+  exerciseMinutes   Int?
+  screenTimeHours   Float?
+  dietQuality       Int?
+  socialInteraction Int?
+  workStress        Int?
+  substanceUse      Int?
+  updatedAt         DateTime @updatedAt
+}
+
+model Quiz {
+  id          String     @id @default(cuid())
+  key         String     @unique
+  title       String
+  description String?
+  questions   Question[]
+}
+
+model Question {
+  id        String  @id @default(cuid())
+  quizId    String
+  quiz      Quiz    @relation(fields: [quizId], references: [id])
+  order     Int
+  text      String
+  options   Option[]
+  weight    Float?
+}
+
+model Option {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id])
+  label      String
+  value      Int
+}
+
+model QuizSubmission {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  quizId     String
+  quiz       Quiz      @relation(fields: [quizId], references: [id])
+  totalScore Int
+  band       String?
+  createdAt  DateTime  @default(now())
+  answers    QuizAnswer[]
+}
+
+model QuizAnswer {
+  id               String         @id @default(cuid())
+  submissionId     String
+  submission       QuizSubmission @relation(fields: [submissionId], references: [id])
+  questionId       String
+  selectedOptionId String
+  value            Int
+}
+
+model GameType {
+  id   String @id @default(cuid())
+  key  String @unique
+  name String
+}
+
+model GameSession {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  gameTypeId  String
+  gameType    GameType @relation(fields: [gameTypeId], references: [id])
+  score       Int
+  durationSec Int
+  createdAt   DateTime @default(now())
+}
+
+model Doctor {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+  user         User    @relation(fields: [userId], references: [id])
+  name         String
+  city         String?
+  country      String?
+  latitude     Float?
+  longitude    Float?
+  telehealth   Boolean @default(false)
+  specialties  DoctorSpecialty[]
+  availability DoctorWeeklyAvailability[]
+  appointments Appointment[] @relation("DoctorAppointments")
+}
+
+model Specialty {
+  id      String @id @default(cuid())
+  key     String @unique
+  name    String
+  doctors DoctorSpecialty[]
+}
+
+model DoctorSpecialty {
+  doctorId    String
+  specialtyId String
+  doctor      Doctor    @relation(fields: [doctorId], references: [id])
+  specialty   Specialty @relation(fields: [specialtyId], references: [id])
+  @@id([doctorId, specialtyId])
+}
+
+model DoctorWeeklyAvailability {
+  id          String  @id @default(cuid())
+  doctorId    String
+  doctor      Doctor  @relation(fields: [doctorId], references: [id])
+  weekday     Int     // 0 Sun ... 6 Sat
+  startMinute Int
+  endMinute   Int
+  slotMinutes Int     @default(20)
+  timezone    String
+  @@index([doctorId, weekday])
+}
+
+model Appointment {
+  id            String            @id @default(cuid())
+  doctorId      String
+  doctor        Doctor            @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  patientUserId String
+  patient       User              @relation("PatientAppointments", fields: [patientUserId], references: [id])
+  date          DateTime          // UTC midnight of doctor's local date
+  startMinute   Int               // minutes since midnight local
+  status        AppointmentStatus @default(BOOKED)
+  serialNumber  Int
+  createdAt     DateTime          @default(now())
+  @@unique([doctorId, date, startMinute])
+  @@unique([doctorId, date, serialNumber])
+  @@index([doctorId, date])
+}
+
+model AppointmentDayCounter {
+  doctorId   String
+  date       DateTime
+  nextSerial Int     @default(1)
+  doctor     Doctor  @relation(fields: [doctorId], references: [id])
+  @@id([doctorId, date])
+}
+
+model DerivedConcern {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  source    String
+  concern   String
+  score     Float
+  createdAt DateTime @default(now())
+}
