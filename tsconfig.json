@@ -16,14 +16,9 @@
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "incremental": true,
-    "ignoreDeprecations": "6.0",
-    "baseUrl": ".",
     "paths": {
-      "@/lib/*": [
-        "src/lib/*"
-      ],
-      "@/components/*": [
-        "src/components/*"
+      "@/*": [
+        "./src/*"
       ]
     },
     "isolatedModules": true,
