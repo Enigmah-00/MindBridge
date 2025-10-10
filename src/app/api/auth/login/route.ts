@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { signJwt, setAuthCookie, verifyPassword } from "@/lib/auth";
+import { signJwt, setAuthCookieOn, verifyPassword } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   const { usernameOrEmail, password } = await req.json();
@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
   if (!ok) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
 
   const token = signJwt({ sub: user.id, role: user.role as any });
-  setAuthCookie(token);
-  return NextResponse.json({ id: user.id, username: user.username, role: user.role });
+  const res = NextResponse.json({ id: user.id, username: user.username, role: user.role });
+  setAuthCookieOn(res, token);
+  return res;
 }

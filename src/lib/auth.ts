@@ -1,9 +1,11 @@
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
+import type { NextResponse } from "next/server";
 import { prisma } from "./prisma";
 
-const COOKIE_NAME = "mb_token";
+export const COOKIE_NAME = "mb_token";
+const isProd = process.env.NODE_ENV === "production";
 
 export async function hashPassword(password: string) {
   return argon2.hash(password);
@@ -27,7 +29,7 @@ export function verifyJwt(token: string): JwtPayload | null {
 }
 
 export async function getSession() {
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
   const token = cookieStore.get(COOKIE_NAME)?.value;
   if (!token) return null;
   const payload = verifyJwt(token);
@@ -46,25 +48,21 @@ export async function requireSession() {
 export async function requireRole(role: "USER" | "DOCTOR" | "ADMIN") {
   const s = await getSession();
   if (!s) throw new Error("Unauthorized");
-  if (s.role !== role && !(role === "USER" && (s.role === "USER"))) throw new Error("Forbidden");
+  if (s.role !== role && !(role === "USER" && s.role === "USER")) throw new Error("Forbidden");
   return s;
 }
 
-export function setAuthCookie(token: string) {
-  const cookieStore = cookies();
-  // Cookie on server actions/route handlers
-  cookieStore.then(cs => cs.set({
-    name: COOKIE_NAME,
-    value: token,
+// Helpers to set/clear the auth cookie on a NextResponse
+export function setAuthCookieOn(res: NextResponse, token: string) {
+  res.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: true,
+    secure: isProd ? true : false, // allow HTTP on localhost
     path: "/",
-    maxAge: 60 * 60 * 24 * 7
-  }));
+    maxAge: 60 * 60 * 24 * 7,
+  });
 }
 
-export function clearAuthCookie() {
-  const cookieStore = cookies();
-  cookieStore.then(cs => cs.delete(COOKIE_NAME));
+export function clearAuthCookieOn(res: NextResponse) {
+  res.cookies.delete(COOKIE_NAME);
 }

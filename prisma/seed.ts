@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+
 const prisma = new PrismaClient();
 
 async function main() {
@@ -21,14 +22,15 @@ async function main() {
     }),
   ]);
 
-  // Sample doctor user
+  // Sample doctor user (note: passwordHash here is a placeholder; not used to login)
   const docUser = await prisma.user.upsert({
     where: { username: "dr_smith" },
     update: {},
     create: {
       username: "dr_smith",
       email: "drsmith@example.com",
-      passwordHash: "$argon2id$v=19$m=65536,t=3,p=1$zFqQq2Sk8mYQmH2r2cP1EA$z0gTQqt5kY8T5mJXW8Yy3oD0+5qorZkqck2/7Qv+Kj0", // placeholder hash, not used
+      passwordHash:
+        "$argon2id$v=19$m=65536,t=3,p=1$zFqQq2Sk8mYQmH2r2cP1EA$z0gTQqt5kY8T5mJXW8Yy3oD0+5qorZkqck2/7Qv+Kj0",
       role: "DOCTOR",
     },
   });
@@ -56,10 +58,22 @@ async function main() {
     skipDuplicates: true,
   });
 
-  // Availability: Mon-Fri, 9:00-12:00, 20-min slots
+  // Availability: Mon–Fri, 9:00–12:00, 20-min slots
   for (const weekday of [1, 2, 3, 4, 5]) {
-    await prisma.doctorWeeklyAvailability.create({
-      data: {
+    await prisma.doctorWeeklyAvailability.upsert({
+      where: {
+        // composite uniqueness not defined, so use a synthetic id by reading first
+        id: (
+          await prisma.doctorWeeklyAvailability.findFirst({
+            where: { doctorId: doctor.id, weekday, startMinute: 9 * 60, endMinute: 12 * 60 },
+          })
+        )?.id ?? "",
+      },
+      update: {
+        slotMinutes: 20,
+        timezone: "Asia/Dhaka",
+      },
+      create: {
         doctorId: doctor.id,
         weekday,
         startMinute: 9 * 60,
@@ -67,22 +81,48 @@ async function main() {
         slotMinutes: 20,
         timezone: "Asia/Dhaka",
       },
+    }).catch(async () => {
+      // fallback if upsert key was invalid: ensure one record exists
+      const existing = await prisma.doctorWeeklyAvailability.findFirst({
+        where: { doctorId: doctor.id, weekday, startMinute: 9 * 60, endMinute: 12 * 60 },
+      });
+      if (!existing) {
+        await prisma.doctorWeeklyAvailability.create({
+          data: {
+            doctorId: doctor.id,
+            weekday,
+            startMinute: 9 * 60,
+            endMinute: 12 * 60,
+            slotMinutes: 20,
+            timezone: "Asia/Dhaka",
+          },
+        });
+      }
     });
   }
 
-  // Quizzes: PHQ-9 and GAD-7 minimal seed
+  // Quizzes
   const phq = await prisma.quiz.upsert({
     where: { key: "PHQ-9" },
     update: {},
-    create: { key: "PHQ-9", title: "PHQ-9 Depression Questionnaire", description: "Screening for depression symptoms" },
+    create: {
+      key: "PHQ-9",
+      title: "PHQ-9 Depression Questionnaire",
+      description: "Screening for depression symptoms",
+    },
   });
+
   const gad = await prisma.quiz.upsert({
     where: { key: "GAD-7" },
     update: {},
-    create: { key: "GAD-7", title: "GAD-7 Anxiety Questionnaire", description: "Screening for generalized anxiety" },
+    create: {
+      key: "GAD-7",
+      title: "GAD-7 Anxiety Questionnaire",
+      description: "Screening for generalized anxiety",
+    },
   });
 
-  const phqQuestions = [
+  const phqQuestions: readonly string[] = [
     "Little interest or pleasure in doing things",
     "Feeling down, depressed, or hopeless",
     "Trouble falling or staying asleep, or sleeping too much",
@@ -91,11 +131,12 @@ async function main() {
     "Feeling bad about yourself",
     "Trouble concentrating",
     "Moving/speaking slowly or being fidgety/restless",
-    "Thoughts that you would be better off dead or of hurting yourself"
+    "Thoughts that you would be better off dead or of hurting yourself",
   ];
-  for (let i = 0; i < phqQuestions.length; i++) {
+
+  for (const [i, text] of phqQuestions.entries()) {
     const q = await prisma.question.create({
-      data: { quizId: phq.id, order: i + 1, text: phqQuestions[i] },
+      data: { quizId: phq.id, order: i + 1, text },
     });
     await prisma.option.createMany({
       data: [
@@ -104,21 +145,23 @@ async function main() {
         { questionId: q.id, label: "More than half the days", value: 2 },
         { questionId: q.id, label: "Nearly every day", value: 3 },
       ],
+      skipDuplicates: true,
     });
   }
 
-  const gadQuestions = [
+  const gadQuestions: readonly string[] = [
     "Feeling nervous, anxious or on edge",
     "Not being able to stop or control worrying",
     "Worrying too much about different things",
     "Trouble relaxing",
     "Being so restless that it is hard to sit still",
     "Becoming easily annoyed or irritable",
-    "Feeling afraid as if something awful might happen"
+    "Feeling afraid as if something awful might happen",
   ];
-  for (let i = 0; i < gadQuestions.length; i++) {
+
+  for (const [i, text] of gadQuestions.entries()) {
     const q = await prisma.question.create({
-      data: { quizId: gad.id, order: i + 1, text: gadQuestions[i] },
+      data: { quizId: gad.id, order: i + 1, text },
     });
     await prisma.option.createMany({
       data: [
@@ -127,15 +170,18 @@ async function main() {
         { questionId: q.id, label: "More than half the days", value: 2 },
         { questionId: q.id, label: "Nearly every day", value: 3 },
       ],
+      skipDuplicates: true,
     });
   }
 
   console.log("Seed complete");
 }
 
-main().catch(e => {
-  console.error(e);
-  process.exit(1);
-}).finally(async () => {
-  await prisma.$disconnect();
-});
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

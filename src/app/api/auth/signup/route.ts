@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { hashPassword, signJwt, setAuthCookie } from "@/lib/auth";
+import { hashPassword, signJwt, setAuthCookieOn } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -29,8 +29,9 @@ export async function POST(req: NextRequest) {
       });
     }
     const token = signJwt({ sub: user.id, role: r as any });
-    setAuthCookie(token);
-    return NextResponse.json({ id: user.id, username: user.username, role: r });
+    const res = NextResponse.json({ id: user.id, username: user.username, role: r });
+    setAuthCookieOn(res, token);
+    return res;
   } catch (e: any) {
     if (e.code === "P2002") return NextResponse.json({ error: "Username or email exists" }, { status: 409 });
     return NextResponse.json({ error: "Signup failed" }, { status: 500 });
