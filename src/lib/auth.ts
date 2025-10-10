@@ -18,14 +18,23 @@ export async function verifyPassword(hash: string, password: string) {
 }
 
 export function signJwt(payload: JwtPayload) {
-  const secret = process.env.JWT_SECRET!;
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET environment variable is not set");
+  }
   return jwt.sign(payload, secret, { expiresIn: "7d" });
 }
 
 export function verifyJwt(token: string): JwtPayload | null {
   try {
-    return jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-  } catch {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      console.error("JWT_SECRET environment variable is not set");
+      return null;
+    }
+    return jwt.verify(token, secret) as JwtPayload;
+  } catch (error) {
+    console.error("JWT verification failed:", error);
     return null;
   }
 }
