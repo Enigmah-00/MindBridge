@@ -74,7 +74,7 @@ export default async function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {doctorAppointments.map(a => (
+                  {doctorAppointments.map((a) => (
                     <tr key={a.id} className="border-b">
                       <td className="py-2">{a.serialNumber}</td>
                       <td className="py-2">{a.patient.username}</td>

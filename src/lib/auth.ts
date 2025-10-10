@@ -2,24 +2,26 @@ import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import type { NextResponse } from "next/server";
-import { prisma } from "./prisma";
+import { prisma } from "@/lib/prisma";
 
 export const COOKIE_NAME = "mb_token";
 const isProd = process.env.NODE_ENV === "production";
 
+export type JwtPayload = { sub: string; role: "USER" | "DOCTOR" | "ADMIN" };
+
 export async function hashPassword(password: string) {
   return argon2.hash(password);
 }
+
 export async function verifyPassword(hash: string, password: string) {
   return argon2.verify(hash, password);
 }
-
-export type JwtPayload = { sub: string; role: "USER" | "DOCTOR" | "ADMIN" };
 
 export function signJwt(payload: JwtPayload) {
   const secret = process.env.JWT_SECRET!;
   return jwt.sign(payload, secret, { expiresIn: "7d" });
 }
+
 export function verifyJwt(token: string): JwtPayload | null {
   try {
     return jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
@@ -40,19 +42,22 @@ export async function getSession() {
 }
 
 export async function requireSession() {
-  const s = await getSession();
-  if (!s) throw new Error("Unauthorized");
-  return s;
+  const session = await getSession();
+  if (!session) {
+    throw new Error("Unauthorized");
+  }
+  return session;
 }
 
 export async function requireRole(role: "USER" | "DOCTOR" | "ADMIN") {
-  const s = await getSession();
-  if (!s) throw new Error("Unauthorized");
-  if (s.role !== role && !(role === "USER" && s.role === "USER")) throw new Error("Forbidden");
-  return s;
+  const session = await requireSession();
+  if (session.user.role !== role) {
+    throw new Error("Forbidden");
+  }
+  return session;
 }
 
-// Helpers to set/clear the auth cookie on a NextResponse
+// Set and clear cookie helpers (use inside API route handlers on the response)
 export function setAuthCookieOn(res: NextResponse, token: string) {
   res.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,

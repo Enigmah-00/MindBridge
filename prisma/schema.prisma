@@ -21,18 +21,18 @@ enum AppointmentStatus {
 }
 
 model User {
-  id              String   @id @default(cuid())
-  username        String   @unique
-  email           String?  @unique
+  id              String           @id @default(cuid())
+  username        String           @unique
+  email           String?          @unique
   passwordHash    String
-  role            Role     @default(USER)
-  createdAt       DateTime @default(now())
+  role            Role             @default(USER)
+  createdAt       DateTime         @default(now())
   profile         Profile?
   quizSubmissions QuizSubmission[]
   gameSessions    GameSession[]
   derivedConcerns DerivedConcern[]
   doctor          Doctor?
-  appointments    Appointment[] @relation("PatientAppointments")
+  appointments    Appointment[]    @relation("PatientAppointments")
 }
 
 model Profile {
@@ -67,13 +67,13 @@ model Quiz {
 }
 
 model Question {
-  id        String  @id @default(cuid())
-  quizId    String
-  quiz      Quiz    @relation(fields: [quizId], references: [id])
-  order     Int
-  text      String
-  options   Option[]
-  weight    Float?
+  id      String   @id @default(cuid())
+  quizId  String
+  quiz    Quiz     @relation(fields: [quizId], references: [id])
+  order   Int
+  text    String
+  options Option[]
+  weight  Float?
 }
 
 model Option {
@@ -85,14 +85,14 @@ model Option {
 }
 
 model QuizSubmission {
-  id         String    @id @default(cuid())
+  id         String       @id @default(cuid())
   userId     String
-  user       User      @relation(fields: [userId], references: [id])
+  user       User         @relation(fields: [userId], references: [id])
   quizId     String
-  quiz       Quiz      @relation("QuizToSubmissions", fields: [quizId], references: [id])
+  quiz       Quiz         @relation("QuizToSubmissions", fields: [quizId], references: [id])
   totalScore Int
   band       String?
-  createdAt  DateTime  @default(now())
+  createdAt  DateTime     @default(now())
   answers    QuizAnswer[]
 }
 
@@ -124,24 +124,24 @@ model GameSession {
 }
 
 model Doctor {
-  id           String                    @id @default(cuid())
-  userId       String                    @unique
-  user         User                      @relation(fields: [userId], references: [id])
+  id           String                     @id @default(cuid())
+  userId       String                     @unique
+  user         User                       @relation(fields: [userId], references: [id])
   name         String
   city         String?
   country      String?
   latitude     Float?
   longitude    Float?
-  telehealth   Boolean                   @default(false)
+  telehealth   Boolean                    @default(false)
   specialties  DoctorSpecialty[]
   availability DoctorWeeklyAvailability[]
-  appointments Appointment[]             @relation("DoctorAppointments")
-  dayCounters  AppointmentDayCounter[]   @relation("DoctorToDayCounters") // back relation
+  appointments Appointment[]              @relation("DoctorAppointments")
+  dayCounters  AppointmentDayCounter[]    @relation("DoctorToDayCounters") // back relation
 }
 
 model Specialty {
-  id      String @id @default(cuid())
-  key     String @unique
+  id      String            @id @default(cuid())
+  key     String            @unique
   name    String
   doctors DoctorSpecialty[]
 }
@@ -151,18 +151,20 @@ model DoctorSpecialty {
   specialtyId String
   doctor      Doctor    @relation(fields: [doctorId], references: [id])
   specialty   Specialty @relation(fields: [specialtyId], references: [id])
+
   @@id([doctorId, specialtyId])
 }
 
 model DoctorWeeklyAvailability {
-  id          String  @id @default(cuid())
+  id          String @id @default(cuid())
   doctorId    String
-  doctor      Doctor  @relation(fields: [doctorId], references: [id])
-  weekday     Int     // 0 Sun ... 6 Sat
+  doctor      Doctor @relation(fields: [doctorId], references: [id])
+  weekday     Int // 0 Sun ... 6 Sat
   startMinute Int
   endMinute   Int
-  slotMinutes Int     @default(20)
+  slotMinutes Int    @default(20)
   timezone    String
+
   @@index([doctorId, weekday])
 }
 
@@ -172,11 +174,12 @@ model Appointment {
   doctor        Doctor            @relation("DoctorAppointments", fields: [doctorId], references: [id])
   patientUserId String
   patient       User              @relation("PatientAppointments", fields: [patientUserId], references: [id])
-  date          DateTime          // UTC midnight of doctor's local date
-  startMinute   Int               // minutes since midnight local
+  date          DateTime // UTC midnight of doctor's local date
+  startMinute   Int // minutes since midnight local
   status        AppointmentStatus @default(BOOKED)
   serialNumber  Int
   createdAt     DateTime          @default(now())
+
   @@unique([doctorId, date, startMinute])
   @@unique([doctorId, date, serialNumber])
   @@index([doctorId, date])
@@ -185,8 +188,9 @@ model Appointment {
 model AppointmentDayCounter {
   doctorId   String
   date       DateTime
-  nextSerial Int     @default(1)
-  doctor     Doctor  @relation("DoctorToDayCounters", fields: [doctorId], references: [id])
+  nextSerial Int      @default(1)
+  doctor     Doctor   @relation("DoctorToDayCounters", fields: [doctorId], references: [id])
+
   @@id([doctorId, date])
 }
 
