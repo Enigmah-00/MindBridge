@@ -44,6 +44,34 @@ export default function GamesPage() {
       icon: "🧪",
       color: "bg-pink-500",
     },
+    {
+      id: "nonogram",
+      name: "Nonogram (Picross)",
+      description: "Logic puzzle - reveal pictures using number clues",
+      icon: "🧩",
+      color: "bg-indigo-500",
+    },
+    {
+      id: "sliding-puzzle",
+      name: "15-Puzzle",
+      description: "Classic sliding tile puzzle game",
+      icon: "🔢",
+      color: "bg-blue-600",
+    },
+    {
+      id: "sudoku",
+      name: "Sudoku",
+      description: "Fill the 9×9 grid with digits 1-9",
+      icon: "🔢",
+      color: "bg-teal-500",
+    },
+    {
+      id: "tile-builder",
+      name: "Tile Scenery Builder",
+      description: "Build beautiful landscapes tile by tile",
+      icon: "🗺️",
+      color: "bg-emerald-500",
+    },
   ];
 
   return (
