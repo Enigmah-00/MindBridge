@@ -15,6 +15,7 @@ export default function ProfilePage() {
   const [data, setData] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [userRole, setUserRole] = useState<string>("");
   const [doctorData, setDoctorData] = useState<any>({});
   const [specialties, setSpecialties] = useState<any[]>([]);
@@ -49,6 +50,10 @@ export default function ProfilePage() {
       const j = await r.json();
       setData(j || {});
       setLoading(false);
+      // Set editing to true if profile is empty/incomplete
+      if (!j || !j.age || !j.gender) {
+        setIsEditing(true);
+      }
     });
   }, []);
 
@@ -106,6 +111,7 @@ export default function ProfilePage() {
       alert("✅ Profile saved successfully!");
       const updated = await res.json();
       setData(updated);
+      setIsEditing(false); // Exit edit mode after successful save
     } else {
       alert("❌ Failed to save profile");
     }
@@ -145,8 +151,20 @@ export default function ProfilePage() {
   return (
     <section className="max-w-4xl mx-auto space-y-6">
       <div className="card p-6">
-        <h1 className="text-2xl font-semibold mb-2">Lifestyle Profile</h1>
-        <p className="text-gray-600 text-sm">Complete your profile for personalized mental health insights and doctor recommendations</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold mb-2">Lifestyle Profile</h1>
+            <p className="text-gray-600 text-sm">Complete your profile for personalized mental health insights and doctor recommendations</p>
+          </div>
+          {!isEditing && (
+            <button 
+              onClick={() => setIsEditing(true)}
+              className="btn bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              ✏️ Edit Profile
+            </button>
+          )}
+        </div>
       </div>
       
       <form onSubmit={save} className="space-y-6">
@@ -165,6 +183,7 @@ export default function ProfilePage() {
                   defaultValue={doctorData.name ?? ""} 
                   placeholder="e.g., Dr. Mohammad Zaman"
                   required
+                  disabled={!isEditing}
                 />
               </div>
               
@@ -177,12 +196,13 @@ export default function ProfilePage() {
                   defaultValue={doctorData.city ?? ""} 
                   placeholder="e.g., Dhaka"
                   required
+                  disabled={!isEditing}
                 />
               </div>
               
               <div>
                 <label className="label">Country *</label>
-                <select className="input" name="doctorCountry" defaultValue={doctorData.country ?? "Bangladesh"}>
+                <select className="input" name="doctorCountry" defaultValue={doctorData.country ?? "Bangladesh"} disabled={!isEditing}>
                   {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
@@ -194,6 +214,7 @@ export default function ProfilePage() {
                   name="telehealth" 
                   defaultChecked={doctorData.telehealth ?? false}
                   className="w-4 h-4"
+                  disabled={!isEditing}
                 />
                 <label htmlFor="telehealth" className="text-sm font-medium">Offer Telehealth Services</label>
               </div>
@@ -207,12 +228,13 @@ export default function ProfilePage() {
                   <button
                     key={spec.id}
                     type="button"
-                    onClick={() => toggleSpecialty(spec.id)}
+                    onClick={() => isEditing && toggleSpecialty(spec.id)}
+                    disabled={!isEditing}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                       selectedSpecialties.includes(spec.id)
                         ? "bg-blue-600 text-white"
                         : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                    }`}
+                    } ${!isEditing ? "opacity-60 cursor-not-allowed" : ""}`}
                   >
                     {selectedSpecialties.includes(spec.id) ? "✓ " : ""}{spec.name}
                   </button>
@@ -240,6 +262,7 @@ export default function ProfilePage() {
                 min="1"
                 max="120"
                 required
+                disabled={!isEditing}
               />
             </div>
             <div>
@@ -249,6 +272,7 @@ export default function ProfilePage() {
                 name="gender" 
                 defaultValue={data.gender ?? ""}
                 required
+                disabled={!isEditing}
               >
                 <option value="">Select gender</option>
                 <option value="Male">Male</option>
@@ -271,6 +295,7 @@ export default function ProfilePage() {
                 name="city" 
                 defaultValue={data.city ?? ""}
                 placeholder="e.g., Dhaka"
+                disabled={!isEditing}
               />
             </div>
             <div>
@@ -279,6 +304,7 @@ export default function ProfilePage() {
                 className="input" 
                 name="country" 
                 defaultValue={data.country ?? ""}
+                disabled={!isEditing}
               >
                 <option value="">Select country</option>
                 {COUNTRIES.map(country => (
@@ -297,7 +323,7 @@ export default function ProfilePage() {
                     ? "✅ Your location has been detected and saved automatically" 
                     : "Click below to allow us to detect your location for nearby doctor recommendations"}
                 </p>
-                <button type="button" className="btn bg-blue-600 hover:bg-blue-700 text-white" onClick={locate}>
+                <button type="button" className="btn bg-blue-600 hover:bg-blue-700 text-white" onClick={locate} disabled={!isEditing}>
                   {data.latitude && data.longitude ? "Update Location" : "Enable Location Detection"}
                 </button>
               </div>
@@ -321,6 +347,7 @@ export default function ProfilePage() {
                 name="heightCm" 
                 defaultValue={data.heightCm ?? ""}
                 placeholder="e.g., 170"
+                disabled={!isEditing}
               />
             </div>
             <div>
@@ -332,6 +359,7 @@ export default function ProfilePage() {
                 name="weightKg" 
                 defaultValue={data.weightKg ?? ""}
                 placeholder="e.g., 65"
+                disabled={!isEditing}
               />
             </div>
           </div>
@@ -352,6 +380,7 @@ export default function ProfilePage() {
                 placeholder="e.g., 7.5"
                 min="0"
                 max="24"
+                disabled={!isEditing}
               />
             </div>
             <div>
@@ -363,6 +392,7 @@ export default function ProfilePage() {
                 defaultValue={data.exerciseMinutes ?? ""}
                 placeholder="e.g., 150"
                 min="0"
+                disabled={!isEditing}
               />
             </div>
             <div>
@@ -376,6 +406,7 @@ export default function ProfilePage() {
                 placeholder="e.g., 6"
                 min="0"
                 max="24"
+                disabled={!isEditing}
               />
             </div>
             <div>
@@ -384,6 +415,7 @@ export default function ProfilePage() {
                 className="input" 
                 name="dietQuality" 
                 defaultValue={data.dietQuality ?? ""}
+                disabled={!isEditing}
               >
                 <option value="">Select rating</option>
                 <option value="1">1 - Very Poor</option>
@@ -399,6 +431,7 @@ export default function ProfilePage() {
                 className="input" 
                 name="socialInteraction" 
                 defaultValue={data.socialInteraction ?? ""}
+                disabled={!isEditing}
               >
                 <option value="">Select rating</option>
                 <option value="1">1 - Very Low</option>
@@ -414,6 +447,7 @@ export default function ProfilePage() {
                 className="input" 
                 name="workStress" 
                 defaultValue={data.workStress ?? ""}
+                disabled={!isEditing}
               >
                 <option value="">Select rating</option>
                 <option value="1">1 - Very Low</option>
@@ -429,6 +463,7 @@ export default function ProfilePage() {
                 className="input" 
                 name="substanceUse" 
                 defaultValue={data.substanceUse ?? ""}
+                disabled={!isEditing}
               >
                 <option value="">Select rating</option>
                 <option value="1">1 - None</option>
@@ -441,13 +476,25 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <button 
-          type="submit" 
-          className="btn w-full text-lg py-3" 
-          disabled={saving}
-        >
-          {saving ? "Saving..." : "💾 Save Profile"}
-        </button>
+        {isEditing && (
+          <div className="flex gap-4">
+            <button 
+              type="submit" 
+              className="btn flex-1 text-lg py-3 bg-green-600 hover:bg-green-700 text-white" 
+              disabled={saving}
+            >
+              {saving ? "Saving..." : "💾 Save Profile"}
+            </button>
+            <button 
+              type="button"
+              onClick={() => setIsEditing(false)}
+              className="btn px-8 text-lg py-3 bg-gray-500 hover:bg-gray-600 text-white"
+              disabled={saving}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
       </form>
     </section>
   );

@@ -3,16 +3,35 @@ import { ReactNode } from "react";
 import { Navbar } from "@/components/Navbar";
 
 export const metadata = {
-  title: "MindBridge",
-  description: "Lifestyle insights, mental health screening, and care matching",
+  title: "MindBridge - Your Mental Health Journey",
+  description: "Comprehensive mental health platform with lifestyle insights, validated assessments, and specialist connections",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="h-full">
-      <body className="min-h-full bg-gradient-to-br from-brand-50 to-white text-gray-900">
+    <html lang="en" className="h-full scroll-smooth">
+      <body className="min-h-full text-gray-900 antialiased">
         <Navbar />
-        <main className="max-w-6xl mx-auto px-4 py-8">{children}</main>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          {children}
+        </main>
+        
+        {/* Footer */}
+        <footer className="border-t bg-white/50 backdrop-blur-sm mt-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="text-center text-sm text-gray-600">
+              <p className="mb-2">
+                <span className="font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  MindBridge
+                </span>
+                {" "}© 2025 - Your Mental Health Journey
+              </p>
+              <p className="text-xs text-gray-500">
+                Professional assessments · Secure & Private · 24/7 Access
+              </p>
+            </div>
+          </div>
+        </footer>
       </body>
     </html>
   );

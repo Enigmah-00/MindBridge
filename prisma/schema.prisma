@@ -57,6 +57,17 @@ model Profile {
   socialInteraction Int?
   workStress        Int?
   substanceUse      Int?
+  
+  // Quiz scores - stored for quick access
+  gad7Score         Int?     // Anxiety (GAD-7)
+  phq9Score         Int?     // Depression (PHQ-9)
+  pss10Score        Int?     // Stress (PSS-10)
+  spinScore         Int?     // Social Anxiety (SPIN)
+  pdssScore         Int?     // Panic Disorder (PDSS)
+  asrsScore         Int?     // ADHD (ASRS)
+  ociScore          Int?     // OCD (OCI-R)
+  pcl5Score         Int?     // PTSD (PCL-5)
+  
   updatedAt         DateTime @updatedAt
 }
 
@@ -219,4 +230,14 @@ model Message {
 
   @@index([senderId, receiverId])
   @@index([receiverId, read])
+}
+
+model ChatMessage {
+  id          String   @id @default(cuid())
+  userId      String
+  userMessage String   @db.Text
+  botResponse String   @db.Text
+  timestamp   DateTime @default(now())
+
+  @@index([userId, timestamp])
 }
