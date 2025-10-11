@@ -1,11 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 type Doctor = { id: string; name: string; location: string; specialties: string[] };
 type Slot = { startMinute: number; endMinute: number; slotMinutes: number };
 
-export default function AppointmentsPage() {
+function AppointmentsContent() {
   const searchParams = useSearchParams();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [selected, setSelected] = useState<string>("");
@@ -314,5 +314,20 @@ export default function AppointmentsPage() {
         )}
       </div>
     </section>
+  );
+}
+
+export default function AppointmentsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading appointments...</p>
+        </div>
+      </div>
+    }>
+      <AppointmentsContent />
+    </Suspense>
   );
 }
