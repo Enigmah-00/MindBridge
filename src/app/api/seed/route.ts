@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      await prisma.doctor.upsert({
+      const doctor = await prisma.doctor.upsert({
         where: { userId: user.id },
         update: {},
         create: {
@@ -121,11 +121,25 @@ export async function POST(req: NextRequest) {
           latitude: doc.latitude,
           longitude: doc.longitude,
           telehealth: doc.telehealth,
-          specialties: {
-            connect: doc.specialties.map((s) => ({ id: s.id })),
-          },
         },
       });
+
+      // Create the many-to-many relationships
+      for (const specialty of doc.specialties) {
+        await prisma.doctorSpecialty.upsert({
+          where: {
+            doctorId_specialtyId: {
+              doctorId: doctor.id,
+              specialtyId: specialty.id,
+            },
+          },
+          update: {},
+          create: {
+            doctorId: doctor.id,
+            specialtyId: specialty.id,
+          },
+        });
+      }
     }
 
     // Quizzes
