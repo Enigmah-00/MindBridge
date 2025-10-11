@@ -59,7 +59,8 @@ function calculateClues(solution: number[][]) {
     const groups: number[] = [];
     let count = 0;
     for (let row = 0; row < size; row++) {
-      if (solution[row][col] === 1) {
+      const cellRow = solution[row];
+      if (cellRow && cellRow[col] === 1) {
         count++;
       } else if (count > 0) {
         groups.push(count);
@@ -87,6 +88,7 @@ export default function NonogramGame() {
 
   const initPuzzle = (index: number) => {
     const puzzle = PUZZLES[index];
+    if (!puzzle) return;
     const size = puzzle.solution.length;
     setGrid(Array(size).fill(null).map(() => Array(size).fill(0)));
     const { rowClues: rc, colClues: cc } = calculateClues(puzzle.solution);
@@ -100,12 +102,15 @@ export default function NonogramGame() {
     if (solved) return;
 
     const newGrid = grid.map((r) => [...r]);
+    const currentRow = newGrid[row];
+    if (!currentRow) return;
+    
     if (rightClick) {
       // Right click: cycle through 0 (empty) -> 2 (marked X) -> 0
-      newGrid[row][col] = newGrid[row][col] === 2 ? 0 : 2;
+      currentRow[col] = currentRow[col] === 2 ? 0 : 2;
     } else {
       // Left click: cycle through 0 (empty) -> 1 (filled) -> 0
-      newGrid[row][col] = newGrid[row][col] === 1 ? 0 : 1;
+      currentRow[col] = currentRow[col] === 1 ? 0 : 1;
     }
     setGrid(newGrid);
     setMoves(moves + 1);
@@ -115,10 +120,14 @@ export default function NonogramGame() {
   };
 
   const checkSolution = (currentGrid: number[][]) => {
-    const solution = PUZZLES[currentPuzzle].solution;
-    const isSolved = currentGrid.every((row, i) =>
-      row.every((cell, j) => cell === solution[i][j] || (cell === 2 && solution[i][j] === 0))
-    );
+    const puzzle = PUZZLES[currentPuzzle];
+    if (!puzzle) return;
+    const solution = puzzle.solution;
+    const isSolved = currentGrid.every((row, i) => {
+      const solutionRow = solution[i];
+      if (!solutionRow) return false;
+      return row.every((cell, j) => cell === solutionRow[j] || (cell === 2 && solutionRow[j] === 0));
+    });
     setSolved(isSolved);
   };
 
@@ -154,7 +163,7 @@ export default function NonogramGame() {
               Nonogram (Picross)
             </h1>
             <p className="text-purple-200 text-lg">
-              {PUZZLES[currentPuzzle].name} - Fill the grid using number clues!
+              {PUZZLES[currentPuzzle]?.name || "Puzzle"} - Fill the grid using number clues!
             </p>
           </div>
 
