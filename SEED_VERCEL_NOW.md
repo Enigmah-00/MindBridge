@@ -248,8 +248,8 @@ curl -X POST "https://your-app.vercel.app/api/seed?secret=YOUR_SECRET"
 
 ### Local Development
 ```bash
-# Seed local database
-npm run seed
+# Seed local database with TypeScript seeder (safest for dev)
+npm run seed:dev
 
 # Or manually with Prisma
 npx prisma db seed
@@ -257,8 +257,11 @@ npx prisma db seed
 
 ### Production (Vercel)
 ```bash
-# Quick seed
+# Quick seed via API
 curl -X POST https://YOUR-APP.vercel.app/api/seed
+
+# Run production seed script (uses prisma/seed-production.js)
+npm run seed:prod --if-present
 
 # With your actual URL
 VERCEL_URL="https://mindbridge.vercel.app"

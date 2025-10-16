@@ -36,7 +36,7 @@ Creating mindbridge_db_1 ... done
 npx prisma migrate dev
 
 # Seed the database with data
-npm run seed
+npm run seed:dev
 ```
 
 ### Step 4: Start the Next.js App
@@ -126,7 +126,7 @@ npx prisma generate
 npx prisma migrate dev
 
 # 4. Seed database
-npm run seed
+npm run seed:dev
 
 # 5. Start app
 npm run dev
@@ -162,7 +162,7 @@ lsof -ti:5432 | xargs kill -9
 docker-compose down -v
 docker-compose up -d
 npx prisma migrate dev
-npm run seed
+npm run seed:dev
 ```
 
 ### Problem: "Connection refused"
@@ -192,7 +192,7 @@ docker-compose up -d
 
 # 3. Setup database
 npx prisma migrate dev
-npm run seed
+npm run seed:dev
 
 # 4. Start app
 npm run dev
@@ -207,7 +207,7 @@ npm run dev
 - [ ] `docker ps` shows postgres:16 container running
 - [ ] `.env` file has correct localhost database URLs
 - [ ] `npx prisma migrate dev` completes successfully
-- [ ] `npm run seed` adds 8 doctors and 8 quizzes
+- [ ] `npm run seed:dev` adds 8 doctors and 8 quizzes
 - [ ] `npm run dev` starts the app on port 3000
 - [ ] Can access http://localhost:3000
 

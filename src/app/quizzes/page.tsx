@@ -122,9 +122,16 @@ export default function QuizzesPage() {
       </div>
 
       {quizzes.length === 0 && (
-        <div className="card p-8 text-center text-gray-500">
-          <p>No quizzes available. Please run the database seed.</p>
-          <code className="block mt-2 text-sm">npm run seed</code>
+        <div className="card p-8 text-center text-gray-500 space-y-3">
+          <p className="font-medium text-gray-700">No quizzes available. Seed the database to unlock assessments.</p>
+          <div>
+            <p className="text-sm uppercase tracking-wide text-gray-400">Local development</p>
+            <code className="block mt-1 text-sm">npm run seed:dev</code>
+          </div>
+          <div>
+            <p className="text-sm uppercase tracking-wide text-gray-400">Production / Vercel</p>
+            <code className="block mt-1 text-sm">curl -X POST https://&lt;your-app&gt;.vercel.app/api/seed</code>
+          </div>
         </div>
       )}
     </section>
