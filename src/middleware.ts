@@ -28,9 +28,9 @@ export async function middleware(req: NextRequest) {
   }
 
   try {
-    const secret = process.env.JWT_SECRET;
+    const secret = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET;
     if (!secret) {
-      console.error("[Middleware] JWT_SECRET not found in environment!");
+      console.error("[Middleware] JWT_SECRET or NEXTAUTH_SECRET not found in environment!");
       return NextResponse.redirect(new URL("/auth/login", req.url));
     }
     

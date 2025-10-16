@@ -11,7 +11,8 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const secret = searchParams.get('secret');
   
-  if (secret !== process.env.JWT_SECRET) {
+  const envSecret = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET;
+  if (secret !== envSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

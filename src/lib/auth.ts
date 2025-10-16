@@ -18,13 +18,20 @@ export async function verifyPassword(hash: string, password: string) {
 }
 
 export function signJwt(payload: JwtPayload) {
-  const secret = process.env.JWT_SECRET!;
+  const secret = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET or NEXTAUTH_SECRET must be defined");
+  }
   return jwt.sign(payload, secret, { expiresIn: "7d" });
 }
 
 export function verifyJwt(token: string): JwtPayload | null {
   try {
-    return jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+    const secret = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET;
+    if (!secret) {
+      throw new Error("JWT_SECRET or NEXTAUTH_SECRET must be defined");
+    }
+    return jwt.verify(token, secret) as JwtPayload;
   } catch {
     return null;
   }
@@ -62,9 +69,9 @@ export function setAuthCookieOn(res: NextResponse, token: string) {
   res.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: isProd ? true : false, // allow HTTP on localhost
+    secure: isProd, // HTTPS in production
     path: "/",
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 60 * 60 * 24 * 7, // 7 days
   });
 }
 
