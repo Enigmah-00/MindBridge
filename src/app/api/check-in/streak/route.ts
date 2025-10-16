@@ -97,11 +97,13 @@ export async function GET() {
     }
     longestStreak = Math.max(longestStreak, tempStreak);
 
+    const latestCheckIn = checkIns[0]?.date ?? null;
+
     return NextResponse.json({
       currentStreak,
       longestStreak,
       totalCheckIns: checkIns.length,
-      lastCheckIn: checkIns[0].date,
+      lastCheckIn: latestCheckIn,
     });
   } catch (error) {
     console.error('Error fetching streak:', error);

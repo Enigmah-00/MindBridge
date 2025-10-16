@@ -17,7 +17,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+    const userId = typeof payload.sub === 'string' ? payload.sub : (payload as { userId?: string }).userId;
+
+    if (!userId) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -43,7 +49,7 @@ export async function POST(request: Request) {
     // Calculate risk score based on provided data
     const riskScore = calculateRiskScore(body);
     const riskLevel = getRiskLevel(riskScore);
-    const recommendedActions = getRecommendedActions(riskScore, riskLevel);
+    const recommendedActions = getRecommendedActions(riskLevel);
 
     // Prepare data - only include fields that are provided
     const checkInData: any = {
