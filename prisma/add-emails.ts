@@ -7,9 +7,7 @@ async function addEmailsToExistingUsers() {
     // Get users without emails
     const usersWithoutEmails = await prisma.user.findMany({
       where: {
-        email: {
-          equals: null
-        }
+        email: null
       }
     });
 
