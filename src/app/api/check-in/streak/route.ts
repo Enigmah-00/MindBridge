@@ -55,7 +55,10 @@ export async function GET() {
     today.setHours(0, 0, 0, 0);
 
     for (let i = 0; i < checkIns.length; i++) {
-      const checkInDate = new Date(checkIns[i].date);
+      const checkIn = checkIns[i];
+      if (!checkIn) break;
+      
+      const checkInDate = new Date(checkIn.date);
       checkInDate.setHours(0, 0, 0, 0);
 
       const expectedDate = new Date(today);
@@ -73,8 +76,12 @@ export async function GET() {
     let tempStreak = 1;
 
     for (let i = 0; i < checkIns.length - 1; i++) {
-      const currentDate = new Date(checkIns[i].date);
-      const nextDate = new Date(checkIns[i + 1].date);
+      const currentCheckIn = checkIns[i];
+      const nextCheckIn = checkIns[i + 1];
+      if (!currentCheckIn || !nextCheckIn) continue;
+      
+      const currentDate = new Date(currentCheckIn.date);
+      const nextDate = new Date(nextCheckIn.date);
       currentDate.setHours(0, 0, 0, 0);
       nextDate.setHours(0, 0, 0, 0);
 
