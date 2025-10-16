@@ -1,5 +1,8 @@
 {
-  "/games/page": "app/games/page.js",
+  "/chatbot/page": "app/chatbot/page.js",
   "/dashboard/page": "app/dashboard/page.js",
-  "/profile/page": "app/profile/page.js"
+  "/page": "app/page.js",
+  "/ml-insights/page": "app/ml-insights/page.js",
+  "/resources/page": "app/resources/page.js",
+  "/messages/page": "app/messages/page.js"
 }
