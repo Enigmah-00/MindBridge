@@ -26,6 +26,8 @@ export async function GET() {
         telehealth: true,
         latitude: true,
         longitude: true,
+        avgRating: true,
+        totalReviews: true,
         user: {
           select: {
             role: true,
@@ -92,6 +94,8 @@ export async function GET() {
       // Only include availability if doctor is registered AND has set their availability
       availability: isRegisteredDoctor && hasAvailabilityRecords ? availabilityStrings : [],
       hasAvailability: isRegisteredDoctor && hasAvailabilityRecords,
+      avgRating: doc.avgRating,
+      totalReviews: doc.totalReviews,
     };
   });
 

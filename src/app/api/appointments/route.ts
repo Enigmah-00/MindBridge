@@ -28,12 +28,18 @@ export async function POST(req: NextRequest) {
       const existing = await tx.appointment.findUnique({ where: { doctorId_date_startMinute: { doctorId, date: dateUtc, startMinute } } });
       if (existing) throw new Error("Slot already booked");
 
-      const counter = await tx.appointmentDayCounter.upsert({
+      // Get current counter and increment
+      const existingCounter = await tx.appointmentDayCounter.findUnique({
         where: { doctorId_date: { doctorId, date: dateUtc } },
-        update: { nextSerial: { increment: 1 } },
-        create: { doctorId, date: dateUtc, nextSerial: 1 },
       });
-      const serial = counter.nextSerial;
+      
+      const serial = existingCounter ? existingCounter.nextSerial + 1 : 1;
+      
+      await tx.appointmentDayCounter.upsert({
+        where: { doctorId_date: { doctorId, date: dateUtc } },
+        update: { nextSerial: serial },
+        create: { doctorId, date: dateUtc, nextSerial: serial },
+      });
 
       const appt = await tx.appointment.create({
         data: {

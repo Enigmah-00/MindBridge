@@ -20,6 +20,7 @@ export default function ProfilePage() {
   const [doctorData, setDoctorData] = useState<any>({});
   const [specialties, setSpecialties] = useState<any[]>([]);
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
+  const [userEmail, setUserEmail] = useState<string>("");
 
   useEffect(() => {
     // Fetch user role
@@ -27,6 +28,7 @@ export default function ProfilePage() {
       if (r.ok) {
         const user = await r.json();
         setUserRole(user.role);
+        setUserEmail(user.email || "");
         
         // If doctor, fetch doctor profile and specialties
         if (user.role === "DOCTOR") {
@@ -61,14 +63,36 @@ export default function ProfilePage() {
     e.preventDefault();
     setSaving(true);
     
+    const fd = new FormData(e.currentTarget);
+    
+    // Update email for all users
+    const email = fd.get("email") as string;
+    if (email && email !== userEmail) {
+      const emailRes = await fetch("/api/profile/email", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+        credentials: "include"
+      });
+      
+      if (!emailRes.ok) {
+        const error = await emailRes.json();
+        alert(`❌ Failed to update email: ${error.error}`);
+        setSaving(false);
+        return;
+      }
+      setUserEmail(email);
+    }
+    
     // Save doctor profile if user is a doctor
     if (userRole === "DOCTOR") {
-      const fd = new FormData(e.currentTarget);
+      const feeValue = fd.get("feePerVisit");
       const doctorBody: any = {
         name: fd.get("doctorName"),
         city: fd.get("doctorCity"),
         country: fd.get("doctorCountry"),
         telehealth: fd.get("telehealth") === "on",
+        feePerVisit: feeValue ? Number(feeValue) : null,
         specialtyIds: selectedSpecialties
       };
       
@@ -79,20 +103,22 @@ export default function ProfilePage() {
         credentials: "include"
       });
       
-      if (!docRes.ok) {
-        setSaving(false);
+      setSaving(false);
+      if (docRes.ok) {
+        alert("✅ Profile saved successfully!");
+        const updated = await docRes.json();
+        setDoctorData(updated);
+        setIsEditing(false);
+      } else {
         alert("❌ Failed to save doctor profile");
-        return;
       }
+      return; // Don't save lifestyle profile for doctors
     }
     
-    // Save lifestyle profile
-    const fd = new FormData(e.currentTarget);
+    // Save lifestyle profile (USER role only)
     const body: any = {};
     for (const [k, v] of fd.entries()) {
-      if (v === "") continue;
-      // Skip doctor-specific fields
-      if (["doctorName", "doctorCity", "doctorCountry", "telehealth"].includes(k)) continue;
+      if (v === "" || k === "email") continue; // Skip email field, it's handled separately
       
       if (["age","heightCm","weightKg","latitude","longitude","exerciseMinutes","dietQuality","socialInteraction","workStress","substanceUse","sleepHours","screenTimeHours"].includes(k)) {
         body[k] = Number(v);
@@ -111,7 +137,7 @@ export default function ProfilePage() {
       alert("✅ Profile saved successfully!");
       const updated = await res.json();
       setData(updated);
-      setIsEditing(false); // Exit edit mode after successful save
+      setIsEditing(false);
     } else {
       alert("❌ Failed to save profile");
     }
@@ -125,16 +151,72 @@ export default function ProfilePage() {
     );
   }
 
-  function locate() {
+  async function locate() {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setData((d: any) => ({ 
-            ...d, 
-            latitude: pos.coords.latitude.toString(), 
-            longitude: pos.coords.longitude.toString() 
-          }));
-          alert("✅ Location detected successfully! Your coordinates have been saved.");
+        async (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          
+          // Use reverse geocoding to get city and country
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`,
+              {
+                headers: {
+                  'User-Agent': 'MindBridge/1.0'
+                }
+              }
+            );
+            
+            if (response.ok) {
+              const geoData = await response.json();
+              const address = geoData.address || {};
+              
+              const city = address.city || address.town || address.village || address.municipality || address.county || "";
+              const country = address.country || "";
+              
+              // Update based on user role
+              if (userRole === "DOCTOR") {
+                setDoctorData((d: any) => ({
+                  ...d,
+                  city: city,
+                  country: country
+                }));
+              } else {
+                setData((d: any) => ({ 
+                  ...d, 
+                  latitude: lat.toString(), 
+                  longitude: lon.toString(),
+                  city: city,
+                  country: country
+                }));
+              }
+              
+              if (city && country) {
+                alert(`✅ Location detected: ${city}, ${country}\nYour location has been automatically filled.`);
+              } else {
+                alert("✅ Location detected! Your coordinates have been saved.");
+              }
+            } else {
+              // Fallback if reverse geocoding fails
+              setData((d: any) => ({ 
+                ...d, 
+                latitude: lat.toString(), 
+                longitude: lon.toString()
+              }));
+              alert("✅ Location detected! Your coordinates have been saved.");
+            }
+          } catch (error) {
+            console.error("Reverse geocoding error:", error);
+            // Still save coordinates even if geocoding fails
+            setData((d: any) => ({ 
+              ...d, 
+              latitude: lat.toString(), 
+              longitude: lon.toString()
+            }));
+            alert("✅ Location detected! Your coordinates have been saved.");
+          }
         },
         (error) => {
           alert("❌ Unable to detect location. Please allow location access in your browser settings.");
@@ -175,6 +257,21 @@ export default function ProfilePage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
+                <label className="label">Email *</label>
+                <input 
+                  type="email" 
+                  className="input" 
+                  name="email" 
+                  value={userEmail}
+                  onChange={(e) => setUserEmail(e.target.value)}
+                  placeholder="your.email@example.com"
+                  required
+                  disabled={!isEditing}
+                />
+                <p className="text-xs text-gray-600 mt-1">Required for password recovery</p>
+              </div>
+              
+              <div>
                 <label className="label">Professional Name *</label>
                 <input 
                   type="text" 
@@ -193,7 +290,8 @@ export default function ProfilePage() {
                   type="text" 
                   className="input" 
                   name="doctorCity" 
-                  defaultValue={doctorData.city ?? ""} 
+                  value={doctorData.city ?? ""}
+                  onChange={(e) => setDoctorData({...doctorData, city: e.target.value})}
                   placeholder="e.g., Dhaka"
                   required
                   disabled={!isEditing}
@@ -202,9 +300,26 @@ export default function ProfilePage() {
               
               <div>
                 <label className="label">Country *</label>
-                <select className="input" name="doctorCountry" defaultValue={doctorData.country ?? "Bangladesh"} disabled={!isEditing}>
+                <select 
+                  className="input" 
+                  name="doctorCountry" 
+                  value={doctorData.country ?? "Bangladesh"}
+                  onChange={(e) => setDoctorData({...doctorData, country: e.target.value})}
+                  disabled={!isEditing}
+                >
                   {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
+              </div>
+              
+              <div className="col-span-2">
+                <button 
+                  type="button" 
+                  className="btn bg-green-600 hover:bg-green-700 text-white" 
+                  onClick={locate} 
+                  disabled={!isEditing}
+                >
+                  📍 Update Location (Auto-fill City & Country)
+                </button>
               </div>
               
               <div className="flex items-center gap-2 pt-6">
@@ -217,6 +332,23 @@ export default function ProfilePage() {
                   disabled={!isEditing}
                 />
                 <label htmlFor="telehealth" className="text-sm font-medium">Offer Telehealth Services</label>
+              </div>
+              
+              <div>
+                <label className="label">Consultation Fee (৳ BDT)</label>
+                <input
+                  type="number"
+                  name="feePerVisit"
+                  className="input"
+                  placeholder="e.g., 500"
+                  min="0"
+                  step="50"
+                  defaultValue={doctorData.feePerVisit ?? ""}
+                  disabled={!isEditing}
+                />
+                <p className="text-xs text-gray-600 mt-1">
+                  Optional: Set your consultation fee in Bangladeshi Taka (BDT)
+                </p>
               </div>
             </div>
             
@@ -247,10 +379,28 @@ export default function ProfilePage() {
           </div>
         )}
         
+        {/* User-only sections (Personal Info, Location, Lifestyle) */}
+        {userRole === "USER" && (
+        <>
         {/* Personal Information */}
         <div className="card p-6 space-y-4">
           <h2 className="text-lg font-semibold border-b pb-2">Personal Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="label">Email *</label>
+              <input 
+                type="email" 
+                className="input" 
+                name="email" 
+                value={userEmail}
+                onChange={(e) => setUserEmail(e.target.value)}
+                placeholder="your.email@example.com"
+                required
+                disabled={!isEditing}
+              />
+              <p className="text-xs text-gray-600 mt-1">Required for password recovery</p>
+            </div>
+            
             <div>
               <label className="label">Age *</label>
               <input 
@@ -265,6 +415,7 @@ export default function ProfilePage() {
                 disabled={!isEditing}
               />
             </div>
+            
             <div>
               <label className="label">Gender *</label>
               <select 
@@ -293,7 +444,8 @@ export default function ProfilePage() {
               <input 
                 className="input" 
                 name="city" 
-                defaultValue={data.city ?? ""}
+                value={data.city ?? ""}
+                onChange={(e) => setData({...data, city: e.target.value})}
                 placeholder="e.g., Dhaka"
                 disabled={!isEditing}
               />
@@ -303,7 +455,8 @@ export default function ProfilePage() {
               <select 
                 className="input" 
                 name="country" 
-                defaultValue={data.country ?? ""}
+                value={data.country ?? ""}
+                onChange={(e) => setData({...data, country: e.target.value})}
                 disabled={!isEditing}
               >
                 <option value="">Select country</option>
@@ -494,6 +647,8 @@ export default function ProfilePage() {
               Cancel
             </button>
           </div>
+        )}
+        </>
         )}
       </form>
     </section>

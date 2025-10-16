@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { getSession, requireSession } from "@/lib/auth";
 import Link from "next/link";
+import DailyCheckInSection from "@/components/check-in/DailyCheckInSection";
+import DailyCheckInCard from "@/components/check-in/DailyCheckInCard";
 
 export const dynamic = 'force-dynamic';
 
@@ -152,12 +154,13 @@ export default async function DashboardPage() {
 
       {/* User Dashboard */}
       {user.role === "USER" && (
-        <div className="grid md:grid-cols-2 gap-6">
-          <section className="card p-6 hover:shadow-2xl transition-all duration-300">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-900">
-              <span className="text-2xl">📋</span>
-              <span>Quick Actions</span>
-            </h3>
+        <>
+          <div className="grid md:grid-cols-2 gap-6">
+            <section className="card p-6 hover:shadow-2xl transition-all duration-300">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-900">
+                <span className="text-2xl">📋</span>
+                <span>Quick Actions</span>
+              </h3>
             <div className="space-y-3">
               <Link href="/profile" className="group block p-4 bg-gradient-to-r from-blue-50 to-blue-100/50 hover:from-blue-100 hover:to-blue-200/50 rounded-xl transition-all border border-blue-200/50 hover:border-blue-300 hover:-translate-y-0.5">
                 <div className="flex items-center gap-3">
@@ -227,6 +230,9 @@ export default async function DashboardPage() {
               </Link>
             </div>
           </section>
+
+          {/* Daily Check-In Card - Compact */}
+          <DailyCheckInCard />
 
           <section className="card p-6 hover:shadow-2xl transition-all duration-300">
             <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-900">
@@ -441,7 +447,13 @@ export default async function DashboardPage() {
               )}
             </section>
           )}
-        </div>
+          </div>
+
+          {/* Full Daily Check-In Section - Collapsible */}
+          <div id="checkin" className="scroll-mt-8">
+            <DailyCheckInSection />
+          </div>
+        </>
       )}
 
       {/* Doctor Dashboard */}
@@ -476,6 +488,49 @@ export default async function DashboardPage() {
                   </span>
                 ))}
               </div>
+            </div>
+          </section>
+          
+          {/* Quick Links for Doctors */}
+          <section className="card p-6">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-gray-900">
+              <span className="text-xl">⚡</span>
+              <span>Quick Actions</span>
+            </h3>
+            <div className="grid md:grid-cols-3 gap-3">
+              <Link href="/analytics" className="group block p-4 bg-gradient-to-r from-indigo-50 to-indigo-100/50 hover:from-indigo-100 hover:to-indigo-200/50 rounded-xl transition-all border border-indigo-200/50 hover:border-indigo-300 hover:-translate-y-0.5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                    📊
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-900">Business Insights</div>
+                    <div className="text-sm text-gray-600">View analytics & trends</div>
+                  </div>
+                </div>
+              </Link>
+              <Link href="/availibility" className="group block p-4 bg-gradient-to-r from-cyan-50 to-cyan-100/50 hover:from-cyan-100 hover:to-cyan-200/50 rounded-xl transition-all border border-cyan-200/50 hover:border-cyan-300 hover:-translate-y-0.5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-cyan-600 text-white flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                    🗓️
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-900">Set Availability</div>
+                    <div className="text-sm text-gray-600">Manage your schedule</div>
+                  </div>
+                </div>
+              </Link>
+              <Link href="/profile" className="group block p-4 bg-gradient-to-r from-amber-50 to-amber-100/50 hover:from-amber-100 hover:to-amber-200/50 rounded-xl transition-all border border-amber-200/50 hover:border-amber-300 hover:-translate-y-0.5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-amber-600 text-white flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                    👤
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-900">Update Profile</div>
+                    <div className="text-sm text-gray-600">Edit fees & specialties</div>
+                  </div>
+                </div>
+              </Link>
             </div>
           </section>
           

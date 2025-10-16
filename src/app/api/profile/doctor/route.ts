@@ -44,6 +44,7 @@ export async function PUT(req: NextRequest) {
       city: doctorData.city,
       country: doctorData.country,
       telehealth: doctorData.telehealth === true || doctorData.telehealth === "true",
+      feePerVisit: doctorData.feePerVisit !== undefined ? (doctorData.feePerVisit === null || doctorData.feePerVisit === "" ? null : Number(doctorData.feePerVisit)) : undefined,
     }
   });
 

@@ -8,12 +8,23 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { username, email, password, role, doctorProfile } = body;
 
-  if (!username || !password) {
-    return NextResponse.json({ error: "Username and password required" }, { status: 400 });
+  if (!username || !password || !email) {
+    return NextResponse.json({ error: "Username, email, and password are required" }, { status: 400 });
+  }
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
+  }
+
+  // Validate password length
+  if (password.length < 6) {
+    return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
   }
 
   const existing = await prisma.user.findFirst({
-    where: { OR: [{ username }, ...(email ? [{ email }] : [])] },
+    where: { OR: [{ username }, { email: email.toLowerCase() }] },
   });
   if (existing) {
     return NextResponse.json({ error: "Username or email already taken" }, { status: 409 });
@@ -23,7 +34,7 @@ export async function POST(req: NextRequest) {
   const user = await prisma.user.create({
     data: {
       username,
-      email: email || null,
+      email: email.toLowerCase(),
       passwordHash,
       role: role === "DOCTOR" ? "DOCTOR" : "USER",
       ...(role === "DOCTOR" && doctorProfile

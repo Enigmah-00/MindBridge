@@ -31,15 +31,15 @@ export function Navbar() {
   const isActive = (path: string) => pathname === path;
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-white/80 backdrop-blur-lg shadow-sm">
+    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <span className="text-white font-bold text-sm">MB</span>
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center group-hover:bg-blue-700 transition-colors">
+              <span className="text-white font-bold">MB</span>
             </div>
-            <span className="font-bold text-xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <span className="font-bold text-xl text-gray-900">
               MindBridge
             </span>
           </Link>
@@ -50,10 +50,10 @@ export function Navbar() {
               <>
                 <Link 
                   href="/dashboard" 
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive('/dashboard') 
-                      ? 'bg-blue-50 text-blue-600' 
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-gray-100 text-gray-900' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
                   Dashboard
@@ -62,113 +62,133 @@ export function Navbar() {
                   <>
                     <Link 
                       href="/profile" 
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         isActive('/profile') 
-                          ? 'bg-blue-50 text-blue-600' 
-                          : 'text-gray-700 hover:bg-gray-100'
+                          ? 'bg-gray-100 text-gray-900' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
                     >
                       Profile
                     </Link>
                     <Link 
                       href="/quizzes" 
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         isActive('/quizzes') 
-                          ? 'bg-blue-50 text-blue-600' 
-                          : 'text-gray-700 hover:bg-gray-100'
+                          ? 'bg-gray-100 text-gray-900' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
                     >
                       Assessments
                     </Link>
                     <Link 
                       href="/games" 
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         isActive('/games') 
-                          ? 'bg-blue-50 text-blue-600' 
-                          : 'text-gray-700 hover:bg-gray-100'
+                          ? 'bg-gray-100 text-gray-900' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
                     >
                       Games
                     </Link>
                     <Link 
                       href="/doctors" 
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         isActive('/doctors') 
-                          ? 'bg-blue-50 text-blue-600' 
-                          : 'text-gray-700 hover:bg-gray-100'
+                          ? 'bg-gray-100 text-gray-900' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
                     >
                       Doctors
                     </Link>
                     <Link 
                       href="/appointments" 
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         isActive('/appointments') 
-                          ? 'bg-blue-50 text-blue-600' 
-                          : 'text-gray-700 hover:bg-gray-100'
+                          ? 'bg-gray-100 text-gray-900' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
                     >
                       Appointments
                     </Link>
                     <Link 
-                      href="/chatbot" 
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        isActive('/chatbot') 
-                          ? 'bg-gradient-to-r from-indigo-50 to-pink-50 text-indigo-600' 
-                          : 'text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-pink-50'
+                      href="/ml-insights" 
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        isActive('/ml-insights') || isActive('/chatbot')
+                          ? 'bg-blue-50 text-blue-700' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
                     >
-                      🤖 AI Chat
+                      MindMap
                     </Link>
                     <Link 
                       href="/resources" 
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         isActive('/resources') 
-                          ? 'bg-blue-50 text-blue-600' 
-                          : 'text-gray-700 hover:bg-gray-100'
+                          ? 'bg-gray-100 text-gray-900' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
                     >
-                      📚 Resources
+                      Resources
                     </Link>
                   </>
                 )}
                 {role === "DOCTOR" && (
                   <>
                     <Link 
+                      href="/profile" 
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        isActive('/profile') 
+                          ? 'bg-gray-100 text-gray-900' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                    >
+                      Profile
+                    </Link>
+                    <Link 
                       href="/availibility" 
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         isActive('/availibility') 
-                          ? 'bg-blue-50 text-blue-600' 
-                          : 'text-gray-700 hover:bg-gray-100'
+                          ? 'bg-gray-100 text-gray-900' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
                     >
                       Availability
                     </Link>
                     <Link 
                       href="/appointments" 
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         isActive('/appointments') 
-                          ? 'bg-blue-50 text-blue-600' 
-                          : 'text-gray-700 hover:bg-gray-100'
+                          ? 'bg-gray-100 text-gray-900' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
                     >
                       Appointments
+                    </Link>
+                    <Link 
+                      href="/analytics" 
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        isActive('/analytics') 
+                          ? 'bg-gray-100 text-gray-900' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                    >
+                      Analytics
                     </Link>
                   </>
                 )}
                 <Link 
                   href="/messages" 
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive('/messages') 
-                      ? 'bg-blue-50 text-blue-600' 
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-gray-100 text-gray-900' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
-                  💬 Messages
+                  Messages
                 </Link>
                 <button 
                   onClick={logout} 
-                  className="ml-2 btn btn-secondary text-sm"
+                  className="ml-2 px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
                 >
                   Logout
                 </button>
@@ -176,7 +196,7 @@ export function Navbar() {
             )}
             {!authed && (
               <>
-                <Link href="/auth/login" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">
+                <Link href="/auth/login" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900">
                   Login
                 </Link>
                 <Link href="/auth/signup" className="btn btn-primary text-sm ml-2">
@@ -226,11 +246,11 @@ export function Navbar() {
                     <Link href="/appointments" className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg">
                       Appointments
                     </Link>
-                    <Link href="/chatbot" className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg">
-                      🤖 AI Chat
+                    <Link href="/ml-insights" className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg">
+                      � MindMap
                     </Link>
                     <Link href="/resources" className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg">
-                      📚 Resources
+                      Resources
                     </Link>
                   </>
                 )}

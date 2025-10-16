@@ -22,20 +22,22 @@ enum AppointmentStatus {
 }
 
 model User {
-  id              String           @id @default(cuid())
-  username        String           @unique
-  email           String?          @unique
-  passwordHash    String
-  role            Role             @default(USER)
-  createdAt       DateTime         @default(now())
-  profile         Profile?
-  quizSubmissions QuizSubmission[]
-  gameSessions    GameSession[]
-  derivedConcerns DerivedConcern[]
-  doctor          Doctor?
-  appointments    Appointment[]    @relation("PatientAppointments")
-  sentMessages    Message[]        @relation("SentMessages")
-  receivedMessages Message[]       @relation("ReceivedMessages")
+  id                    String           @id @default(cuid())
+  username              String           @unique
+  email                 String           @unique
+  passwordHash          String
+  role                  Role             @default(USER)
+  createdAt             DateTime         @default(now())
+  resetToken            String?          @unique
+  resetTokenExpiry      DateTime?
+  profile               Profile?
+  quizSubmissions       QuizSubmission[]
+  gameSessions          GameSession[]
+  derivedConcerns       DerivedConcern[]
+  doctor                Doctor?
+  appointments          Appointment[]    @relation("PatientAppointments")
+  sentMessages          Message[]        @relation("SentMessages")
+  receivedMessages      Message[]        @relation("ReceivedMessages")
 }
 
 model Profile {
@@ -138,19 +140,25 @@ model GameSession {
 }
 
 model Doctor {
-  id           String                     @id @default(cuid())
-  userId       String                     @unique
-  user         User                       @relation(fields: [userId], references: [id])
-  name         String
-  city         String?
-  country      String?
-  latitude     Float?
-  longitude    Float?
-  telehealth   Boolean                    @default(false)
-  specialties  DoctorSpecialty[]
-  availability DoctorWeeklyAvailability[]
-  appointments Appointment[]              @relation("DoctorAppointments")
-  dayCounters  AppointmentDayCounter[]    @relation("DoctorToDayCounters") // back relation
+  id            String                     @id @default(cuid())
+  userId        String                     @unique
+  user          User                       @relation(fields: [userId], references: [id])
+  name          String
+  city          String?
+  country       String?
+  latitude      Float?
+  longitude     Float?
+  telehealth    Boolean                    @default(false)
+  feePerVisit   Int?                       // Consultation fee in BDT (Bangladeshi Taka)
+  
+  // Rating stats (calculated from appointment reviews)
+  avgRating     Float?                     // Average rating (1-5)
+  totalReviews  Int                        @default(0) // Total number of reviews
+  
+  specialties   DoctorSpecialty[]
+  availability  DoctorWeeklyAvailability[]
+  appointments  Appointment[]              @relation("DoctorAppointments")
+  dayCounters   AppointmentDayCounter[]    @relation("DoctorToDayCounters") // back relation
 }
 
 model Specialty {
@@ -193,6 +201,11 @@ model Appointment {
   status        AppointmentStatus @default(BOOKED)
   serialNumber  Int
   createdAt     DateTime          @default(now())
+  
+  // Rating & Review (added after appointment is completed)
+  rating        Int?              // 1-5 stars
+  review        String?           // Optional text review
+  reviewedAt    DateTime?         // When the review was submitted
 
   @@unique([doctorId, date, startMinute])
   @@unique([doctorId, date, serialNumber])
@@ -240,4 +253,264 @@ model ChatMessage {
   timestamp   DateTime @default(now())
 
   @@index([userId, timestamp])
+}
+
+// Daily Check-in and Lifestyle Tracking
+model DailyCheckIn {
+  id                  String   @id @default(cuid())
+  userId              String
+  date                DateTime @default(now())
+  
+  // Morning Check-in
+  sleepHours          Float?
+  sleepQuality        Int?     // 1-5 scale
+  morningMood         Int?     // 1-10 scale
+  morningEnergy       Int?     // 1-10 scale
+  
+  // Evening Check-in
+  eveningMood         Int?     // 1-10 scale
+  overallDayRating    Int?     // 1-10 scale
+  
+  // Daily Activities
+  exerciseMinutes     Int?
+  exerciseIntensity   String?  // light, moderate, vigorous
+  socialInteractions  Int?     // count of meaningful interactions
+  socialQuality       Int?     // 1-5 scale
+  
+  // Stress and Coping
+  stressLevel         Int?     // 1-10 scale
+  stressEvents        String?  // comma-separated or JSON
+  copingStrategies    String?  // what helped today
+  
+  // Lifestyle Factors
+  mealsEaten          Int?
+  mealQuality         Int?     // 1-5 scale
+  caffeineIntake      Int?     // mg or cups
+  alcoholIntake       Int?     // standard drinks
+  screenTimeHours     Float?
+  outdoorTimeMinutes  Int?
+  
+  // Mental Health Specific
+  anxietyLevel        Int?     // 1-10 scale
+  depressionIndicator Int?     // 1-10 scale
+  intrusiveThoughts   Boolean?
+  panicAttacks        Boolean?
+  selfHarmThoughts    Boolean?
+  
+  // Medications and Treatment
+  medicationTaken     Boolean?
+  therapySession      Boolean?
+  
+  // Gratitude and Positives
+  gratitudeNote       String?  @db.Text
+  dailyWins           String?  @db.Text
+  
+  // Challenges
+  difficultMoments    String?  @db.Text
+  triggersEncountered String?
+  
+  // AI Analysis
+  riskScore           Float?   // ML-generated risk score
+  riskLevel           String?  // low, medium, high, critical
+  recommendedActions  String?  @db.Text // JSON array
+  aiInsights          String?  @db.Text
+  
+  // Completion tracking
+  morningComplete     Boolean  @default(false)
+  eveningComplete     Boolean  @default(false)
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@index([userId, riskLevel])
+}
+
+// Mental Health Journey - "Current Location"
+model MentalHealthSnapshot {
+  id                  String   @id @default(cuid())
+  userId              String
+  timestamp           DateTime @default(now())
+  
+  // Current state assessment
+  overallRiskScore    Float    // 0-100
+  riskLevel           String   // low, medium, high, critical
+  urgency             String   // routine, soon, urgent, immediate
+  
+  // Domain-specific scores
+  anxietyScore        Float?
+  depressionScore     Float?
+  stressScore         Float?
+  socialScore         Float?
+  sleepScore          Float?
+  
+  // Contributing factors
+  riskFactors         String   @db.Text // JSON array
+  protectiveFactors   String   @db.Text // JSON array
+  
+  // Trends
+  trendDirection      String?  // improving, stable, declining, crisis
+  changeRate          Float?   // rate of change
+  
+  // Context
+  lifeEvents          String?  @db.Text
+  recentChanges       String?  @db.Text
+  
+  createdAt           DateTime @default(now())
+  
+  @@index([userId, timestamp])
+  @@index([userId, riskLevel])
+}
+
+// Smart Routing - Recommended Interventions
+model InterventionRecommendation {
+  id                  String   @id @default(cuid())
+  userId              String
+  timestamp           DateTime @default(now())
+  
+  // Recommendation details
+  interventionType    String   // exercise, therapy, self-help, crisis, etc.
+  title               String
+  description         String   @db.Text
+  estimatedDuration   Int?     // minutes
+  difficulty          String?  // easy, medium, hard
+  priority            Int      // 1-5, 1 being highest
+  
+  // Personalization
+  relevanceScore      Float    // 0-1, ML-generated
+  reasonsWhy          String   @db.Text // JSON array of reasons
+  expectedBenefit     String?
+  
+  // Action items
+  actionSteps         String   @db.Text // JSON array
+  resourceLinks       String?  @db.Text // JSON array
+  
+  // Tracking
+  status              String   @default("suggested") // suggested, started, completed, skipped, dismissed
+  startedAt           DateTime?
+  completedAt         DateTime?
+  userFeedback        Int?     // 1-5 rating
+  effectiveness       Float?   // ML-measured effectiveness
+  
+  // Follow-up
+  completionNotes     String?  @db.Text
+  wouldRecommendAgain Boolean  @default(true)
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  @@index([userId, status])
+  @@index([userId, timestamp])
+}
+
+// Crisis Detection and Safety
+model CrisisEvent {
+  id                  String   @id @default(cuid())
+  userId              String
+  timestamp           DateTime @default(now())
+  
+  // Detection
+  triggerSource       String   // chat, check-in, assessment, etc.
+  triggerContent      String   @db.Text
+  crisisType          String   // suicide, self-harm, violence, severe-distress
+  severityLevel       Int      // 1-10
+  confidence          Float    // 0-1, ML confidence
+  
+  // Context
+  recentMessages      String?  @db.Text // last few messages
+  recentCheckIns      String?  @db.Text // last few check-ins
+  historyRelevant     String?  @db.Text
+  
+  // Response
+  responseProvided    String   @db.Text // what the AI said
+  resourcesOffered    String   @db.Text // JSON array
+  humanEscalated      Boolean  @default(false)
+  escalatedTo         String?  // therapist, crisis-line, emergency
+  escalatedAt         DateTime?
+  
+  // Resolution
+  status              String   @default("active") // active, resolved, escalated
+  resolution          String?  @db.Text
+  userSafe            Boolean?
+  followUpScheduled   Boolean  @default(false)
+  
+  // Safety planning
+  safetyPlanCreated   Boolean  @default(false)
+  emergencyContacts   String?  @db.Text // JSON array
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  @@index([userId, timestamp])
+  @@index([userId, status])
+  @@index([crisisType, status])
+}
+
+// Learning and Personalization
+model UserPreference {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  
+  // Communication preferences
+  preferredCheckInTime String?  // morning, afternoon, evening
+  reminderFrequency   String?  // daily, alternate, weekly
+  communicationStyle  String?  // direct, gentle, motivational
+  
+  // Intervention preferences
+  preferredActivities String?  @db.Text // JSON array
+  avoidActivities     String?  @db.Text // JSON array
+  effectiveStrategies String?  @db.Text // JSON array of what worked
+  
+  // Crisis settings
+  emergencyContacts   String?  @db.Text // JSON array
+  safetyPlan          String?  @db.Text
+  therapistInfo       String?  @db.Text
+  
+  // Privacy and sharing
+  shareWithTherapist  Boolean  @default(false)
+  therapistUserId     String?
+  
+  // ML personalization
+  userSegment         String?  // ML-generated user type
+  engagementLevel     String?  // high, medium, low
+  responsePatterns    String?  @db.Text // JSON of patterns
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+// Outcome and Effectiveness Tracking
+model OutcomeTracking {
+  id                  String   @id @default(cuid())
+  userId              String
+  measurementDate     DateTime @default(now())
+  
+  // Clinical outcomes
+  symptomImprovement  Float?   // percentage
+  functionalStatus    Int?     // 1-10 scale
+  qualityOfLife       Int?     // 1-10 scale
+  
+  // Engagement metrics
+  checkInStreak       Int?
+  interventionsUsed   Int?
+  interventionsCompleted Int?
+  
+  // Risk trajectory
+  riskTrend           String?  // improving, stable, declining
+  crisisEvents        Int?
+  crisisPrevented     Int?
+  
+  // Treatment progress
+  therapyAttendance   Int?
+  medicationAdherence Float?   // percentage
+  
+  // Self-reported
+  perceivedProgress   Int?     // 1-10 scale
+  satisfactionScore   Int?     // 1-10 scale
+  wouldRecommend      Boolean?
+  
+  createdAt           DateTime @default(now())
+  
+  @@index([userId, measurementDate])
 }

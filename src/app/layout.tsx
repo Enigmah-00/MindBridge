@@ -17,11 +17,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </main>
         
         {/* Footer */}
-        <footer className="border-t bg-white/50 backdrop-blur-sm mt-20">
+        <footer className="border-t border-gray-200 bg-white mt-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center text-sm text-gray-600">
               <p className="mb-2">
-                <span className="font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                <span className="font-semibold text-gray-900">
                   MindBridge
                 </span>
                 {" "}© 2025 - Your Mental Health Journey

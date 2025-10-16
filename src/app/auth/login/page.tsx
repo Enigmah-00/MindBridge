@@ -50,6 +50,14 @@ export default function LoginPage() {
         <div>
           <label className="label">Password</label>
           <input type="password" name="password" className="input" required />
+          <div className="mt-2 text-right">
+            <a 
+              href="/auth/forgot-password" 
+              className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+            >
+              Forgot password?
+            </a>
+          </div>
         </div>
         <button className="btn w-full" type="submit" disabled={loading}>
           {loading ? "Signing in..." : "Sign in"}

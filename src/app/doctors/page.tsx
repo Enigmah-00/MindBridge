@@ -11,6 +11,8 @@ interface Doctor {
   userId?: string;
   availability: string[];
   hasAvailability: boolean;
+  avgRating?: number;
+  totalReviews?: number;
 }
 
 export default function DoctorsListPage() {
@@ -141,6 +143,31 @@ export default function DoctorsListPage() {
                     </span>
                   ))}
                 </div>
+              </div>
+
+              {/* Rating Display */}
+              <div className="border-t pt-3">
+                {doctor.avgRating && doctor.totalReviews && doctor.totalReviews > 0 ? (
+                  <div className="flex items-center gap-2">
+                    <div className="flex text-amber-400">
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i} className={`text-lg ${i < Math.round(doctor.avgRating!) ? 'text-amber-400' : 'text-gray-300'}`}>
+                          ★
+                        </span>
+                      ))}
+                    </div>
+                    <span className="text-sm text-gray-700 font-medium">
+                      {doctor.avgRating.toFixed(1)}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      ({doctor.totalReviews} {doctor.totalReviews === 1 ? 'review' : 'reviews'})
+                    </span>
+                  </div>
+                ) : (
+                  <div className="text-xs text-gray-400 italic">
+                    No reviews yet
+                  </div>
+                )}
               </div>
 
               {/* Availability Section */}

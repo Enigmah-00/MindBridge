@@ -71,12 +71,14 @@ export default function SignupPage() {
           <input name="username" className="input" required />
         </div>
         <div>
-          <label className="label">Email (optional)</label>
-          <input type="email" name="email" className="input" />
+          <label className="label">Email</label>
+          <input type="email" name="email" className="input" required placeholder="your.email@example.com" />
+          <p className="text-xs text-gray-500 mt-1">Required for password recovery</p>
         </div>
         <div>
           <label className="label">Password</label>
-          <input type="password" name="password" className="input" required />
+          <input type="password" name="password" className="input" required minLength={6} />
+          <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
         </div>
 
         {role === "DOCTOR" && (
