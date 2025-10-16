@@ -37,6 +37,10 @@
   ],
   "exclude": [
     "node_modules",
-    "prisma/seed.ts"
+    "prisma/seed.ts",
+    "prisma/seed-full.ts",
+    "prisma/seed-production.js",
+    "prisma/add-emails.ts",
+    "prisma/clear-availability.ts"
   ]
 }
