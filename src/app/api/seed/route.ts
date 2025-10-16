@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60; // Allow up to 60 seconds for seeding
+
 // This endpoint should be protected in production
 // Add authentication or disable after first use
 export async function POST(req: NextRequest) {
